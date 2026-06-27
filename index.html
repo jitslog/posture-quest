@@ -419,17 +419,44 @@ function loadStep(){
   const next = document.getElementById('ov-next'), pause = document.getElementById('ov-pause');
   if(st.type==='timer'){
     t.style.display='block'; r.style.display='none'; pause.style.display='block';
-    document.getElementById('ov-unit').textContent='seconds';
-    sess.remaining = st.val; sess.paused=false; pause.textContent='Pause';
-    t.textContent = st.val; setRing(1);
     next.textContent = 'Skip ▸';
-    runTimer();
+    startPrep(st);
   } else { // reps
+    sess.phase='active';
     t.style.display='none'; r.style.display='block'; pause.style.display='none';
     document.getElementById('ov-unit').textContent = st.name.includes('Dead bug') ? 'per side' : 'reps';
     r.textContent = st.val; setRing(1);
     next.textContent = 'Done ▸';
   }
+}
+const PREP = 10;
+function startPrep(st){
+  clearInterval(sess.timerId);
+  sess.phase='prep'; sess.paused=false; sess.prep=PREP;
+  const t=document.getElementById('ov-timer');
+  document.getElementById('ov-pause').textContent='Start now ▶';
+  document.getElementById('ov-unit').textContent='get ready — read the steps';
+  document.getElementById('ring-prog').setAttribute('stroke','#fbbf24');
+  t.textContent=sess.prep; setRing(1);
+  sess.timerId=setInterval(()=>{
+    if(sess.paused) return;
+    sess.prep--;
+    t.textContent=Math.max(sess.prep,0);
+    setRing(sess.prep/PREP);
+    if(sess.prep<=3 && sess.prep>0) beep(440,80);
+    if(sess.prep<=0){ clearInterval(sess.timerId); beginActive(st); }
+  },1000);
+}
+function beginActive(st){
+  clearInterval(sess.timerId);
+  sess.phase='active'; sess.paused=false; sess.remaining=st.val;
+  const t=document.getElementById('ov-timer');
+  document.getElementById('ov-pause').textContent='Pause';
+  document.getElementById('ov-unit').textContent='seconds';
+  document.getElementById('ring-prog').setAttribute('stroke','#2dd4bf');
+  t.textContent=st.val; setRing(1);
+  beep(880,200);
+  runTimer();
 }
 function runTimer(){
   clearInterval(sess.timerId);
@@ -445,6 +472,7 @@ function runTimer(){
 }
 function setRing(frac){ document.getElementById('ring-prog').style.strokeDashoffset = RING*(1-Math.max(0,Math.min(1,frac))); }
 function togglePause(){
+  if(sess.phase==='prep'){ clearInterval(sess.timerId); beginActive(sess.steps[sess.i]); return; }
   sess.paused=!sess.paused;
   document.getElementById('ov-pause').textContent = sess.paused?'Resume':'Pause';
 }
