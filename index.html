@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0f172a" />
+<meta name="theme-color" content="#0d0f14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Posture Quest" />
@@ -128,6 +128,89 @@
   a{color:var(--accent)}
   .tag{font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#10233f; color:#93c5fd; border:1px solid #1d3c6b}
 </style>
+
+<!-- ============ PREMIUM DARK SKIN ============ -->
+<style id="pro-skin">
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap');
+:root{
+  --bg:#0d0f14; --bg2:#0d0f14; --card:#161922; --card2:#1c2029;
+  --txt:#f3f5f8; --muted:#9aa3b2; --line:rgba(255,255,255,.07);
+  --accent:#10b981; --accent2:#059669; --gold:#f5b73c;
+  --good:#34d399; --bad:#f87171; --pink:#f472b6;
+  --hair:rgba(255,255,255,.07);
+  --elev:0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px rgba(0,0,0,.45);
+}
+*{font-feature-settings:"cv02","cv03","cv04","ss01"}
+body{background:
+  radial-gradient(900px 500px at 50% -120px, rgba(16,185,129,.10), transparent 60%),
+  #0d0f14;
+  color:var(--txt); font-family:'Figtree',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:'Figtree',sans-serif; letter-spacing:-.02em; font-weight:700}
+h1{font-weight:800}
+.muted{color:var(--muted)}
+.big,.timer,.reps,.stat .big,#points-pill,#points-store{font-variant-numeric:tabular-nums}
+
+/* surfaces: flat with hairline border + soft elevation */
+.card{background:var(--card); border:1px solid var(--hair); border-radius:10px; box-shadow:var(--elev)}
+.stat{background:var(--card2); border:1px solid var(--hair); border-radius:8px}
+.stat .big{color:var(--txt); font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px}
+.stat .lbl{letter-spacing:.02em; text-transform:uppercase; font-size:11px}
+
+/* buttons */
+.btn{background:#10b981; color:#04241b; border-radius:8px; box-shadow:none;
+  border:1px solid rgba(0,0,0,.18); font-weight:700; letter-spacing:-.01em;
+  transition:background .15s ease, transform .06s ease}
+.btn:hover{background:#15c08b}
+.btn:active{background:#0e9a72; transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.btn.secondary{background:var(--card2); color:var(--txt); border:1px solid var(--hair); box-shadow:none}
+.btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--hair); box-shadow:none}
+.btn.danger{background:rgba(248,113,113,.08); color:var(--bad); border:1px solid rgba(248,113,113,.25); box-shadow:none}
+.btn:disabled{background:var(--card2); color:#5b6472; border:1px solid var(--hair); box-shadow:none; filter:none}
+
+.pill{background:var(--card2); border:1px solid var(--hair); color:var(--txt); border-radius:6px}
+.tag{background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.25); color:var(--good); border-radius:4px}
+
+/* status banners — flat tinted with left accent */
+.status-banner{border-radius:8px; border:1px solid var(--hair); padding-left:14px}
+.status-alive{background:rgba(52,211,153,.08); border-color:rgba(52,211,153,.25); color:var(--good)}
+.status-warn{background:rgba(245,183,60,.08); border-color:rgba(245,183,60,.28); color:var(--gold)}
+.status-done{background:rgba(96,165,250,.08); border-color:rgba(96,165,250,.28); color:#7eb0ff}
+
+/* items */
+.item{background:var(--card2); border:1px solid var(--hair); border-radius:8px}
+.cost{color:var(--gold)}
+
+/* inputs */
+input,textarea{background:#0b0d12; border:1px solid var(--hair); color:var(--txt); border-radius:8px}
+input:focus,textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(16,185,129,.18)}
+
+/* nav: refined with active indicator */
+nav{background:rgba(13,15,20,.85); border-top:1px solid var(--hair); backdrop-filter:blur(14px)}
+nav button{color:var(--muted)}
+nav button.active{color:var(--accent)}
+.ic{display:flex; align-items:center; justify-content:center}
+.ic svg{width:22px; height:22px}
+.flame{display:inline-flex; align-items:center}
+
+/* session overlay */
+.overlay{background:radial-gradient(700px 420px at 50% 12%, rgba(16,185,129,.10), transparent 60%), #0d0f14}
+.ring svg circle:first-child{stroke:#222733}
+.stepname{letter-spacing:-.02em}
+.progbar{background:var(--card2); border:1px solid var(--hair)}
+.progbar > i{background:linear-gradient(90deg,#10b981,#34d399)}
+
+/* modal */
+.modal{background:rgba(4,6,10,.66); backdrop-filter:blur(4px)}
+.sheet{background:var(--card); border:1px solid var(--hair); border-radius:12px; box-shadow:var(--elev)}
+.reveal-num{color:var(--gold)}
+.jackpot{color:var(--pink)}
+
+.disclaimer{border:1px solid var(--hair); color:var(--muted); border-radius:10px}
+a{color:var(--accent)}
+
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important} }
+</style>
 </head>
 <body>
 
@@ -139,13 +222,13 @@
         <h1>Posture Quest</h1>
         <div class="muted small">Fix the tilt. One day at a time.</div>
       </div>
-      <div class="pill"><span class="flame" style="font-size:18px">💎</span><span id="points-pill">0</span></div>
+      <div class="pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5cc8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg><span id="points-pill">0</span></div>
     </div>
 
     <div class="card">
       <div class="stat-hero">
         <div class="stat">
-          <div class="big"><span class="flame">🔥</span> <span id="streak-num">0</span></div>
+          <div class="big"><span class="flame"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5973c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span> <span id="streak-num">0</span></div>
           <div class="lbl">day streak</div>
         </div>
         <div class="stat">
@@ -310,10 +393,10 @@
 
 <!-- ================= NAV ================= -->
 <nav>
-  <button data-v="home" class="active" onclick="go('home')"><span class="ic">🏠</span>Home</button>
-  <button data-v="store" onclick="go('store')"><span class="ic">🎁</span>Store</button>
-  <button data-v="progress" onclick="go('progress')"><span class="ic">📈</span>Progress</button>
-  <button data-v="more" onclick="go('more')"><span class="ic">⚙️</span>Setup</button>
+  <button data-v="home" class="active" onclick="go('home')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>Home</button>
+  <button data-v="store" onclick="go('store')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></svg></span>Store</button>
+  <button data-v="progress" onclick="go('progress')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></span>Progress</button>
+  <button data-v="more" onclick="go('more')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></span>Setup</button>
 </nav>
 
 <script>
@@ -364,10 +447,10 @@ function refillFreeze(){
 function streakStatus(){
   const t = todayStr(), last = S.lastCompletedDate;
   if(last === t) return {cls:'status-done', txt:'✅ Done today. Your streak is safe — see you tomorrow.'};
-  if(!last) return {cls:'status-warn', txt:'No streak yet. Do today\'s session to start one. 🔥'};
+  if(!last) return {cls:'status-warn', txt:'No streak yet — do today\'s session to start one.'};
   const gap = dayDiff(t, last);
-  if(gap === 1) return {cls:'status-alive', txt:'🔥 Streak alive — do today\'s session to keep it going.'};
-  if(gap === 2 && S.freezes>0) return {cls:'status-warn', txt:'❄️ You missed yesterday — your freeze will save the streak if you go today.'};
+  if(gap === 1) return {cls:'status-alive', txt:'Streak alive — do today\'s session to keep it going.'};
+  if(gap === 2 && S.freezes>0) return {cls:'status-warn', txt:'You missed yesterday — your freeze will save the streak if you go today.'};
   return {cls:'status-warn', txt:'Streak reset. No big deal — every streak starts at day 1. Go now. 💪'};
 }
 
@@ -681,8 +764,10 @@ function render(){
   document.getElementById('points-pill').textContent = S.points;
   document.getElementById('points-store').textContent = S.points;
   const fz = document.getElementById('freeze-num'), fl = document.getElementById('freeze-lbl');
-  if(S.freezes>0){ fz.textContent='❄️'; fl.textContent='freeze ready'; }
-  else{ fz.textContent='—'; fl.textContent='freeze used'; }
+  const SNOW='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>';
+  fz.style.color='#7cc4ff'; fz.innerHTML=SNOW;
+  if(S.freezes>0){ fz.style.opacity='1'; fl.textContent='freeze ready'; }
+  else{ fz.style.opacity='.3'; fl.textContent='freeze used'; }
   const st = streakStatus();
   const b = document.getElementById('status-banner');
   b.className='status-banner '+st.cls; b.textContent=st.txt;
