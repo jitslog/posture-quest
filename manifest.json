@@ -1,0 +1,19 @@
+{
+  "name": "Posture Quest — Fix Anterior Pelvic Tilt",
+  "short_name": "Posture Quest",
+  "description": "A daily gamified routine to correct anterior pelvic tilt and build perfect posture.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

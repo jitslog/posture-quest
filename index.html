@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Posture Quest" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icons/icon.svg" />
+<link rel="icon" href="./icons/icon.svg" />
+<title>Posture Quest</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --card:#1e293b; --card2:#27364b;
+    --txt:#e2e8f0; --muted:#94a3b8; --line:#334155;
+    --accent:#2dd4bf; --accent2:#3b82f6; --gold:#fbbf24;
+    --good:#34d399; --bad:#f87171; --pink:#f472b6;
+    --r:18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%, #16233f 0%, var(--bg) 55%);
+    color:var(--txt); min-height:100vh; line-height:1.45;
+    padding-bottom:calc(84px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:18px 16px 0}
+  h1,h2,h3{margin:0 0 6px}
+  h1{font-size:22px; letter-spacing:.2px}
+  h2{font-size:18px}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  .center{text-align:center}
+  .row{display:flex; gap:10px; align-items:center}
+  .between{justify-content:space-between}
+  .wrap-gap{flex-wrap:wrap}
+  .card{background:linear-gradient(180deg,var(--card) 0%, #1a2740 100%);
+    border:1px solid var(--line); border-radius:var(--r); padding:16px; margin-bottom:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .btn{appearance:none; border:0; border-radius:14px; padding:14px 18px; font-size:16px;
+    font-weight:700; color:#04201c; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    cursor:pointer; width:100%; transition:transform .06s ease, filter .15s}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{filter:grayscale(.6) brightness(.7); cursor:not-allowed}
+  .btn.secondary{background:var(--card2); color:var(--txt); border:1px solid var(--line)}
+  .btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--line); font-weight:600}
+  .btn.danger{background:#3a1f25; color:var(--bad); border:1px solid #5b2a31}
+  .btn.sm{width:auto; padding:9px 14px; font-size:14px}
+  .pill{display:inline-flex; align-items:center; gap:6px; background:var(--card2);
+    border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:13px; font-weight:600}
+  input,textarea{width:100%; background:#0e1729; border:1px solid var(--line); color:var(--txt);
+    border-radius:12px; padding:12px; font-size:16px; font-family:inherit}
+  label{font-size:13px; color:var(--muted); display:block; margin:8px 0 4px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+
+  /* Header stats */
+  .stat-hero{display:flex; gap:12px}
+  .stat{flex:1; background:var(--card2); border:1px solid var(--line); border-radius:16px;
+    padding:14px; text-align:center}
+  .stat .big{font-size:30px; font-weight:800; line-height:1}
+  .stat .lbl{font-size:12px; color:var(--muted); margin-top:6px}
+  .flame{font-size:30px}
+  .status-banner{border-radius:14px; padding:12px 14px; font-size:14px; font-weight:600; margin-top:12px}
+  .status-alive{background:#0c2e2a; border:1px solid #14524a; color:var(--good)}
+  .status-warn{background:#3a2e10; border:1px solid #6b521a; color:var(--gold)}
+  .status-done{background:#10233f; border:1px solid #1d3c6b; color:#93c5fd}
+
+  /* nav */
+  nav{position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:rgba(15,23,42,.92); backdrop-filter:blur(12px);
+    border-top:1px solid var(--line); display:flex;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+  nav button{flex:1; background:none; border:0; color:var(--muted); font-size:11px; font-weight:600;
+    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; cursor:pointer}
+  nav button .ic{font-size:21px}
+  nav button.active{color:var(--accent)}
+
+  .view{display:none}
+  .view.active{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+
+  /* reward / list items */
+  .item{display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line);
+    border-radius:14px; background:var(--card2); margin-bottom:10px}
+  .item .grow{flex:1; min-width:0}
+  .item .grow .t{font-weight:700}
+  .cost{font-weight:800; color:var(--gold); white-space:nowrap}
+  .x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:4px}
+
+  .progress-card img{width:100%; border-radius:12px; display:block; margin-top:8px}
+  .gallery{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+
+  /* session player overlay */
+  .overlay{position:fixed; inset:0; z-index:60; background:var(--bg);
+    display:none; flex-direction:column; padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+  .overlay.active{display:flex}
+  .ov-top{display:flex; justify-content:space-between; align-items:center}
+  .ov-mid{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center}
+  .stepname{font-size:26px; font-weight:800; margin-bottom:4px}
+  .stepcue{color:var(--muted); max-width:340px; margin:0 auto 18px}
+  .timer{font-size:78px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1}
+  .reps{font-size:64px; font-weight:800}
+  .ring{position:relative; width:230px; height:230px; margin:6px auto 18px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .label{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+  .progbar{height:8px; background:var(--card2); border-radius:999px; overflow:hidden; margin-top:14px}
+  .progbar > i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .3s}
+  .ov-controls{display:flex; gap:10px; margin-top:16px}
+
+  /* modal */
+  .modal{position:fixed; inset:0; z-index:80; background:rgba(2,6,18,.7); display:none;
+    align-items:center; justify-content:center; padding:18px}
+  .modal.active{display:flex}
+  .sheet{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:20px;
+    width:100%; max-width:420px; max-height:86vh; overflow:auto; text-align:center}
+  .reveal-num{font-size:60px; font-weight:900; color:var(--gold); margin:6px 0}
+  .jackpot{color:var(--pink)}
+
+  /* confetti */
+  .confetti{position:fixed; inset:0; pointer-events:none; z-index:90; overflow:hidden}
+  .confetti i{position:absolute; top:-12px; width:9px; height:14px; opacity:.9; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg); opacity:.4}}
+
+  .disclaimer{font-size:12px; color:var(--muted); border:1px dashed var(--line); border-radius:12px; padding:10px}
+  a{color:var(--accent)}
+  .tag{font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#10233f; color:#93c5fd; border:1px solid #1d3c6b}
+</style>
+</head>
+<body>
+
+<!-- ================= HOME ================= -->
+<div class="wrap">
+  <div id="view-home" class="view active">
+    <div class="row between" style="margin-bottom:14px">
+      <div>
+        <h1>Posture Quest</h1>
+        <div class="muted small">Fix the tilt. One day at a time.</div>
+      </div>
+      <div class="pill"><span class="flame" style="font-size:18px">💎</span><span id="points-pill">0</span></div>
+    </div>
+
+    <div class="card">
+      <div class="stat-hero">
+        <div class="stat">
+          <div class="big"><span class="flame">🔥</span> <span id="streak-num">0</span></div>
+          <div class="lbl">day streak</div>
+        </div>
+        <div class="stat">
+          <div class="big" id="best-num">0</div>
+          <div class="lbl">best streak</div>
+        </div>
+        <div class="stat">
+          <div class="big" id="freeze-num">❄️</div>
+          <div class="lbl" id="freeze-lbl">freeze ready</div>
+        </div>
+      </div>
+      <div id="status-banner" class="status-banner status-warn">Loading…</div>
+    </div>
+
+    <div class="card">
+      <h2>Today's session</h2>
+      <p class="muted small" id="mode-desc">Pick how much you've got in the tank today. Both keep your streak alive.</p>
+      <div class="grid2" style="margin-top:6px">
+        <button class="btn" onclick="startSession('full')">Full ~12 min</button>
+        <button class="btn secondary" onclick="startSession('min')">Quick ~5 min</button>
+      </div>
+      <div class="small muted center" style="margin-top:10px" id="today-done-note"></div>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <h2 style="margin:0">The fix, in plain terms</h2>
+        <span class="tag">why this works</span>
+      </div>
+      <p class="small muted" style="margin-top:8px">
+        Your tilt comes from <b>tight hip flexors + lower back</b> pulling your pelvis forward, while
+        <b>weak glutes + core</b> fail to pull it back. The tailbone-tuck you already do is the right
+        position — these reps build the strength to hold it <i>without thinking</i>. Daily wins. Stay consistent
+        ~3 months and it becomes your default.
+      </p>
+      <div class="disclaimer" style="margin-top:8px">
+        Not medical advice. If you have pain or a diagnosed back/hip condition, check with a physio first.
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STORE ================= -->
+  <div id="view-store" class="view">
+    <h1>Reward Store</h1>
+    <p class="muted small">Earn 💎 by doing your routine. Spend them on <b>real</b> rewards <i>you</i> chose.
+      That's the whole point — these mean something because you picked them.</p>
+    <div class="card">
+      <div class="row between"><h2 style="margin:0">Your rewards</h2>
+        <div class="pill"><span>💎</span><span id="points-store">0</span></div></div>
+      <div id="reward-list" style="margin-top:12px"></div>
+      <button class="btn ghost" onclick="openRewardModal()">+ Add a reward</button>
+    </div>
+    <div class="card">
+      <h2>Redeemed</h2>
+      <div id="redeem-list" class="small muted">Nothing yet — go earn it.</div>
+    </div>
+  </div>
+
+  <!-- ================= PROGRESS ================= -->
+  <div id="view-progress" class="view">
+    <h1>Progress</h1>
+    <p class="muted small">The real reward is <b>seeing it work</b>. Once a week, snap a relaxed side-on photo
+      (stand normal, don't pose) and log a quick wall test. In 3 months the difference will be obvious.</p>
+    <div class="card">
+      <h2>Add a check-in</h2>
+      <label>Side-view photo (stays on your device — never uploaded)</label>
+      <input type="file" accept="image/*" capture="environment" id="photo-input" />
+      <label>Wall test — heels/butt/shoulders/head on wall: how big is the gap at your lower back? (e.g. "flat hand fits", "whole forearm")</label>
+      <input id="walltest-input" placeholder="describe the lower-back gap" />
+      <label>Note (optional)</label>
+      <input id="prog-note" placeholder="how it feels, any wins" />
+      <button class="btn" style="margin-top:12px" onclick="addProgress()">Save check-in</button>
+    </div>
+    <div id="progress-list"></div>
+  </div>
+
+  <!-- ================= MORE ================= -->
+  <div id="view-more" class="view">
+    <h1>Setup & Habits</h1>
+
+    <div class="card">
+      <h2>Make it stick (ADHD-friendly)</h2>
+      <p class="small muted">Willpower fails; <b>anchors</b> don't. Glue this to something you already do every day.</p>
+      <label>I'll do my routine right after…</label>
+      <input id="anchor-input" placeholder="e.g. my morning shower / brushing teeth" />
+      <button class="btn ghost" style="margin-top:10px" onclick="saveAnchor()">Save anchor</button>
+    </div>
+
+    <div class="card">
+      <h2>Reminder</h2>
+      <p class="small muted">Best bet: set a repeating <b>phone alarm</b> at this time (apps can't create one for you).
+        Optionally get a browser nudge while this app is open.</p>
+      <label>Daily time</label>
+      <input type="time" id="remind-time" />
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn ghost" onclick="saveReminder()">Save time</button>
+        <button class="btn ghost" onclick="enableNotif()">Enable nudge</button>
+      </div>
+      <div class="small muted" id="notif-status" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Move progress between devices</h2>
+      <p class="small muted">No account, no cloud. Export here, import on your other device.</p>
+      <div class="grid2">
+        <button class="btn ghost" onclick="exportData()">Export</button>
+        <button class="btn ghost" onclick="document.getElementById('import-file').click()">Import</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(event)"/>
+      <div class="small muted" id="io-status" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h2>How scoring works</h2>
+      <ul class="small muted" style="margin:6px 0 0; padding-left:18px">
+        <li>Full session = <b>+12 💎</b>, Quick = <b>+6 💎</b> (once/day for streak).</li>
+        <li>Every session ends with a <b>mystery bonus</b> — usually small, rarely a jackpot.</li>
+        <li>Hit a 7-day multiple → <b>+10 💎</b> milestone bonus.</li>
+        <li>Miss one day? Your <b>❄️ freeze</b> saves the streak (refills weekly). Miss two and it resets — no shame, just start again.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <button class="btn danger" onclick="resetAll()">Reset all data</button>
+    </div>
+    <p class="small muted center" style="padding-bottom:10px">Posture Quest · runs offline · your data lives only on this device.</p>
+  </div>
+</div>
+
+<!-- ================= SESSION OVERLAY ================= -->
+<div id="overlay" class="overlay">
+  <div class="ov-top">
+    <button class="x" onclick="quitSession()">✕ Quit</button>
+    <div class="pill"><span id="ov-mode">Full</span> · <span id="ov-step-idx">1/1</span></div>
+  </div>
+  <div class="ov-mid">
+    <div class="stepname" id="ov-name">—</div>
+    <div class="stepcue" id="ov-cue">—</div>
+    <div class="ring">
+      <svg width="230" height="230">
+        <circle cx="115" cy="115" r="100" stroke="#27364b" stroke-width="16" fill="none"/>
+        <circle id="ring-prog" cx="115" cy="115" r="100" stroke="#2dd4bf" stroke-width="16" fill="none"
+          stroke-linecap="round" stroke-dasharray="628" stroke-dashoffset="0"/>
+      </svg>
+      <div class="label">
+        <div class="timer" id="ov-timer" style="display:none">0</div>
+        <div class="reps" id="ov-reps" style="display:none">0</div>
+        <div class="small muted" id="ov-unit"></div>
+      </div>
+    </div>
+  </div>
+  <div class="progbar"><i id="ov-bar" style="width:0%"></i></div>
+  <div class="ov-controls">
+    <button class="btn secondary" id="ov-pause" onclick="togglePause()">Pause</button>
+    <button class="btn" id="ov-next" onclick="nextStep()">Skip ▸</button>
+  </div>
+</div>
+
+<!-- ================= GENERIC MODAL ================= -->
+<div id="modal" class="modal"><div class="sheet" id="sheet"></div></div>
+<div id="confetti" class="confetti"></div>
+
+<!-- ================= NAV ================= -->
+<nav>
+  <button data-v="home" class="active" onclick="go('home')"><span class="ic">🏠</span>Home</button>
+  <button data-v="store" onclick="go('store')"><span class="ic">🎁</span>Store</button>
+  <button data-v="progress" onclick="go('progress')"><span class="ic">📈</span>Progress</button>
+  <button data-v="more" onclick="go('more')"><span class="ic">⚙️</span>Setup</button>
+</nav>
+
+<script>
+/* =========================================================
+   STATE
+========================================================= */
+const KEY = 'postureQuest.v1';
+const todayStr = () => new Date().toISOString().slice(0,10);
+function dayDiff(a,b){ // whole days from b to a (a later)
+  return Math.round((new Date(a+'T00:00') - new Date(b+'T00:00')) / 86400000);
+}
+
+const DEFAULT = {
+  points:0, streak:0, longestStreak:0,
+  freezes:1, lastFreezeRefill:null,
+  lastCompletedDate:null, totalSessions:0,
+  history:{},                 // {date:{mode,points}}
+  rewards:[
+    {id:id(), name:'30 min of gaming / a show', cost:15},
+    {id:id(), name:'Order your favorite takeout', cost:60},
+    {id:id(), name:'Buy something you want (~$20)', cost:120}
+  ],
+  redemptions:[],
+  progress:[],
+  settings:{anchor:'', reminderTime:''}
+};
+
+let S = load();
+
+function id(){ return Math.random().toString(36).slice(2,9); }
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredClone(DEFAULT);
+    return Object.assign(structuredClone(DEFAULT), JSON.parse(raw));
+  }catch(e){ return structuredClone(DEFAULT); }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ alert('Could not save — storage may be full.'); } }
+
+/* =========================================================
+   STREAK / FREEZE
+========================================================= */
+function refillFreeze(){
+  const t = todayStr();
+  if(!S.lastFreezeRefill){ S.freezes=1; S.lastFreezeRefill=t; return; }
+  if(dayDiff(t, S.lastFreezeRefill) >= 7){ S.freezes = 1; S.lastFreezeRefill = t; }
+}
+function streakStatus(){
+  const t = todayStr(), last = S.lastCompletedDate;
+  if(last === t) return {cls:'status-done', txt:'✅ Done today. Your streak is safe — see you tomorrow.'};
+  if(!last) return {cls:'status-warn', txt:'No streak yet. Do today\'s session to start one. 🔥'};
+  const gap = dayDiff(t, last);
+  if(gap === 1) return {cls:'status-alive', txt:'🔥 Streak alive — do today\'s session to keep it going.'};
+  if(gap === 2 && S.freezes>0) return {cls:'status-warn', txt:'❄️ You missed yesterday — your freeze will save the streak if you go today.'};
+  return {cls:'status-warn', txt:'Streak reset. No big deal — every streak starts at day 1. Go now. 💪'};
+}
+
+/* =========================================================
+   ROUTINES
+========================================================= */
+const FULL = [
+  step('Hip-flexor stretch — RIGHT','timer',40,'Kneel on right knee, left foot forward. TUCK your tailbone, squeeze right glute, ease hips forward. Feel the stretch in the FRONT of your right hip.'),
+  step('Hip-flexor stretch — LEFT','timer',40,'Switch: kneel on left knee. Tuck the tailbone, squeeze left glute, ease forward. Front of the left hip.'),
+  step('Lower-back release','timer',60,'Child\'s pose: sit hips back to heels, arms long, let the lower back round and breathe into it.'),
+  step('Glute bridge — Set 1','reps',12,'On your back, knees bent. Drive through heels, squeeze glutes, lift hips to a straight line. Don\'t arch the back — ribs down.'),
+  step('Glute bridge — Set 2','reps',12,'Same again. Squeeze hard at the top for 1 sec each rep. Glutes do the work, not the lower back.'),
+  step('Dead bug — Set 1','reps',10,'On your back, arms up, knees over hips. Press lower back FLAT into the floor. Slowly extend opposite arm + leg, return. 10 per side.'),
+  step('Dead bug — Set 2','reps',10,'Again, 10 per side. The whole point: keep that lower back pinned flat the entire time.'),
+  step('Plank — Set 1','timer',30,'Forearms down. TUCK the tailbone, squeeze glutes + abs. Flat line head to heels — no sagging hips.'),
+  step('Plank — Set 2','timer',30,'Hold again. Keep tucking that tailbone and breathing.'),
+  step('Posterior pelvic tilt holds','timer',30,'On your back, knees bent. Flatten lower back into floor (the tuck), hold ~5s, release. Repeat slowly. This is the exact motion you\'re training to make automatic.'),
+  step('Standing wall posture hold','timer',30,'Stand: heels, butt, upper back, head on a wall. Gently tuck tailbone so the lower-back gap shrinks. Memorize this feeling — that\'s your target posture.')
+];
+const MIN = [
+  step('Hip-flexor stretch — RIGHT','timer',30,'Kneel on right knee, tuck tailbone, squeeze glute, ease hips forward. Front of right hip.'),
+  step('Hip-flexor stretch — LEFT','timer',30,'Switch sides. Tuck, squeeze, ease forward. Front of left hip.'),
+  step('Glute bridge','reps',15,'On your back, drive through heels, squeeze glutes, lift hips to a straight line. Ribs down, no arching.'),
+  step('Dead bug','reps',10,'Back flat on floor, knees over hips. Extend opposite arm + leg slowly, return. 10 per side. Keep the back pinned.'),
+  step('Standing wall posture hold','timer',30,'Heels/butt/back/head on wall. Tuck tailbone to shrink the lower-back gap. Lock in the feeling.')
+];
+function step(name,type,val,cue){ return {name,type,val,cue}; }
+
+/* =========================================================
+   SESSION PLAYER
+========================================================= */
+let sess = null; // {mode, steps, i, remaining, paused, timerId}
+const RING = 628;
+
+function startSession(mode){
+  sess = { mode, steps: mode==='full'?FULL:MIN, i:0, remaining:0, paused:false, timerId:null };
+  document.getElementById('ov-mode').textContent = mode==='full'?'Full':'Quick';
+  document.getElementById('overlay').classList.add('active');
+  loadStep();
+}
+function loadStep(){
+  clearInterval(sess.timerId);
+  const st = sess.steps[sess.i];
+  document.getElementById('ov-name').textContent = st.name;
+  document.getElementById('ov-cue').textContent = st.cue;
+  document.getElementById('ov-step-idx').textContent = (sess.i+1)+'/'+sess.steps.length;
+  document.getElementById('ov-bar').style.width = (sess.i/sess.steps.length*100)+'%';
+  const t = document.getElementById('ov-timer'), r = document.getElementById('ov-reps');
+  const next = document.getElementById('ov-next'), pause = document.getElementById('ov-pause');
+  if(st.type==='timer'){
+    t.style.display='block'; r.style.display='none'; pause.style.display='block';
+    document.getElementById('ov-unit').textContent='seconds';
+    sess.remaining = st.val; sess.paused=false; pause.textContent='Pause';
+    t.textContent = st.val; setRing(1);
+    next.textContent = 'Skip ▸';
+    runTimer();
+  } else { // reps
+    t.style.display='none'; r.style.display='block'; pause.style.display='none';
+    document.getElementById('ov-unit').textContent = st.name.includes('Dead bug') ? 'per side' : 'reps';
+    r.textContent = st.val; setRing(1);
+    next.textContent = 'Done ▸';
+  }
+}
+function runTimer(){
+  clearInterval(sess.timerId);
+  sess.timerId = setInterval(()=>{
+    if(sess.paused) return;
+    sess.remaining--;
+    const st = sess.steps[sess.i];
+    document.getElementById('ov-timer').textContent = Math.max(sess.remaining,0);
+    setRing(sess.remaining/st.val);
+    if(sess.remaining<=3 && sess.remaining>0) beep(660,90);
+    if(sess.remaining<=0){ clearInterval(sess.timerId); beep(880,220); nextStep(); }
+  },1000);
+}
+function setRing(frac){ document.getElementById('ring-prog').style.strokeDashoffset = RING*(1-Math.max(0,Math.min(1,frac))); }
+function togglePause(){
+  sess.paused=!sess.paused;
+  document.getElementById('ov-pause').textContent = sess.paused?'Resume':'Pause';
+}
+function nextStep(){
+  clearInterval(sess.timerId);
+  if(sess.i < sess.steps.length-1){ sess.i++; loadStep(); }
+  else finishSession();
+}
+function quitSession(){
+  clearInterval(sess&&sess.timerId);
+  document.getElementById('overlay').classList.remove('active');
+  sess=null;
+}
+function finishSession(){
+  document.getElementById('ov-bar').style.width='100%';
+  clearInterval(sess.timerId);
+  const mode = sess.mode;
+  document.getElementById('overlay').classList.remove('active');
+  awardSession(mode);
+  sess=null;
+}
+
+/* =========================================================
+   AWARD / MYSTERY
+========================================================= */
+function awardSession(mode){
+  const t = todayStr();
+  refillFreeze();
+  const already = S.lastCompletedDate === t;
+  let base, milestone=0, froze=false, streakChanged=false;
+
+  if(already){
+    base = 2; // bonus practice, no streak/mystery
+  } else {
+    base = mode==='full'?12:6;
+    const last = S.lastCompletedDate;
+    if(!last){ S.streak=1; }
+    else{
+      const gap = dayDiff(t,last);
+      if(gap===1) S.streak++;
+      else if(gap===2 && S.freezes>0){ S.freezes--; froze=true; S.streak++; }
+      else S.streak=1;
+    }
+    streakChanged=true;
+    S.lastCompletedDate = t;
+    S.longestStreak = Math.max(S.longestStreak, S.streak);
+    if(S.streak%7===0) milestone=10;
+  }
+
+  const mystery = already ? {amount:0, label:''} : rollMystery();
+  const total = base + milestone + mystery.amount;
+  S.points += total;
+  S.totalSessions++;
+  S.history[t] = {mode, points:(S.history[t]?.points||0)+total};
+  save(); render();
+
+  showAward({already, base, milestone, froze, mystery, total, streak:S.streak});
+}
+function rollMystery(){
+  const r = Math.random();
+  if(r < 0.01) return {amount: 50, label:'💥 JACKPOT!!', jackpot:true};
+  if(r < 0.10) return {amount: 15 + Math.floor(Math.random()*6), label:'⭐ Lucky drop!'};
+  if(r < 0.40) return {amount: 6 + Math.floor(Math.random()*5), label:'✨ Nice bonus'};
+  return {amount: 1 + Math.floor(Math.random()*4), label:'🎁 Mystery bonus'};
+}
+
+/* =========================================================
+   MODALS / REVEAL
+========================================================= */
+function showAward(a){
+  let html = '';
+  if(a.already){
+    html = `<div style="font-size:40px">💪</div><h2>Bonus practice!</h2>
+      <p class="muted small">Already done today — streak's safe. Extra reps still count.</p>
+      <div class="reveal-num">+${a.total} 💎</div>`;
+  } else {
+    html = `<div style="font-size:40px">${a.froze?'❄️🔥':'🔥'}</div>
+      <h2>${a.streak} day streak!</h2>
+      ${a.froze?'<p class="small" style="color:var(--gold)">Your freeze caught yesterday\'s miss. Phew.</p>':''}
+      <p class="muted small">Session +${a.base}${a.milestone?` · 7-day milestone +${a.milestone}`:''}</p>
+      <div class="reveal-num ${a.mystery.jackpot?'jackpot':''}">+${a.mystery.amount} 💎</div>
+      <div class="small ${a.mystery.jackpot?'jackpot':'muted'}" style="font-weight:700">${a.mystery.label}</div>
+      <div style="margin-top:10px; font-size:14px">Total earned: <b>+${a.total} 💎</b></div>`;
+  }
+  html += `<button class="btn" style="margin-top:18px" onclick="closeModal()">Sweet 🎉</button>`;
+  openSheet(html);
+  if(!a.already){ burst(a.mystery.jackpot? 120 : 50); beep(990,160); }
+}
+function openSheet(html){ document.getElementById('sheet').innerHTML = html; document.getElementById('modal').classList.add('active'); }
+function closeModal(){ document.getElementById('modal').classList.remove('active'); }
+
+/* reward modal */
+let editingReward = null;
+function openRewardModal(r){
+  editingReward = r||null;
+  openSheet(`
+    <h2>${r?'Edit':'New'} reward</h2>
+    <p class="small muted">Pick something you actually want. That's what makes 💎 worth chasing.</p>
+    <label style="text-align:left">What's the reward?</label>
+    <input id="rw-name" value="${r?escapeHtml(r.name):''}" placeholder="e.g. boba run, new game, movie night"/>
+    <label style="text-align:left">Cost in 💎</label>
+    <input id="rw-cost" type="number" min="1" value="${r?r.cost:30}"/>
+    <div class="grid2" style="margin-top:14px">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveReward()">Save</button>
+    </div>`);
+}
+function saveReward(){
+  const name = document.getElementById('rw-name').value.trim();
+  const cost = Math.max(1, parseInt(document.getElementById('rw-cost').value)||1);
+  if(!name) return;
+  if(editingReward){ editingReward.name=name; editingReward.cost=cost; }
+  else S.rewards.push({id:id(), name, cost});
+  save(); render(); closeModal();
+}
+function delReward(rid){ S.rewards = S.rewards.filter(r=>r.id!==rid); save(); render(); }
+function redeem(rid){
+  const r = S.rewards.find(x=>x.id===rid); if(!r) return;
+  if(S.points < r.cost) return;
+  S.points -= r.cost;
+  S.redemptions.unshift({id:id(), name:r.name, cost:r.cost, date:todayStr()});
+  save(); render();
+  openSheet(`<div style="font-size:44px">🎉</div><h2>Reward unlocked!</h2>
+    <p>Go enjoy: <b>${escapeHtml(r.name)}</b></p>
+    <p class="small muted">You earned it. Cashing in is the whole point — do it.</p>
+    <button class="btn" style="margin-top:16px" onclick="closeModal()">Claim it</button>`);
+  burst(80); beep(880,200);
+}
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+function addProgress(){
+  const file = document.getElementById('photo-input').files[0];
+  const wall = document.getElementById('walltest-input').value.trim();
+  const note = document.getElementById('prog-note').value.trim();
+  const finish = (photo)=>{
+    S.progress.unshift({id:id(), date:todayStr(), photo:photo||null, wall, note});
+    save(); render();
+    document.getElementById('photo-input').value='';
+    document.getElementById('walltest-input').value='';
+    document.getElementById('prog-note').value='';
+    go('progress');
+  };
+  if(file) resizeImage(file, finish);
+  else if(wall||note) finish(null);
+}
+function resizeImage(file, cb){
+  const r = new FileReader();
+  r.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max=720, scale=Math.min(1, max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=img.width*scale; c.height=img.height*scale;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      cb(c.toDataURL('image/jpeg',0.6));
+    };
+    img.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+function delProgress(pid){ S.progress = S.progress.filter(p=>p.id!==pid); save(); render(); }
+
+/* =========================================================
+   SETTINGS / IO
+========================================================= */
+function saveAnchor(){ S.settings.anchor=document.getElementById('anchor-input').value.trim(); save(); flash('io-status','Anchor saved 👍'); }
+function saveReminder(){ S.settings.reminderTime=document.getElementById('remind-time').value; save(); flash('notif-status','Time saved. Now set a phone alarm at this time too 🔔'); }
+function enableNotif(){
+  if(!('Notification' in window)){ flash('notif-status','Notifications not supported here.'); return; }
+  Notification.requestPermission().then(p=>{
+    flash('notif-status', p==='granted'?'Nudges on (while app is open). A phone alarm is more reliable.':'Permission denied.');
+  });
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(S)], {type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='posture-quest-backup.json'; a.click();
+  flash('io-status','Exported. Send the file to your other device, then Import there.');
+}
+function importData(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{ try{ S=Object.assign(structuredClone(DEFAULT), JSON.parse(e.target.result)); save(); render(); flash('io-status','Imported ✅'); }
+    catch(err){ flash('io-status','That file could not be read.'); } };
+  r.readAsText(f);
+}
+function resetAll(){
+  openSheet(`<div style="font-size:40px">⚠️</div><h2>Reset everything?</h2>
+    <p class="small muted">Wipes your streak, points, rewards and photos. Can't be undone.</p>
+    <div class="grid2" style="margin-top:14px">
+      <button class="btn secondary" onclick="closeModal()">Keep my data</button>
+      <button class="btn danger" onclick="doReset()">Reset</button></div>`);
+}
+function doReset(){ S=structuredClone(DEFAULT); save(); render(); closeModal(); go('home'); }
+
+/* =========================================================
+   RENDER
+========================================================= */
+function render(){
+  refillFreeze();
+  // home
+  document.getElementById('streak-num').textContent = S.streak;
+  document.getElementById('best-num').textContent = S.longestStreak;
+  document.getElementById('points-pill').textContent = S.points;
+  document.getElementById('points-store').textContent = S.points;
+  const fz = document.getElementById('freeze-num'), fl = document.getElementById('freeze-lbl');
+  if(S.freezes>0){ fz.textContent='❄️'; fl.textContent='freeze ready'; }
+  else{ fz.textContent='—'; fl.textContent='freeze used'; }
+  const st = streakStatus();
+  const b = document.getElementById('status-banner');
+  b.className='status-banner '+st.cls; b.textContent=st.txt;
+  document.getElementById('today-done-note').textContent =
+    S.lastCompletedDate===todayStr() ? 'Done today — extra rounds give a small bonus.' :
+    (S.settings.anchor ? ('Anchor: right after '+S.settings.anchor) : '');
+
+  // store
+  const rl = document.getElementById('reward-list'); rl.innerHTML='';
+  if(!S.rewards.length) rl.innerHTML='<div class="small muted">No rewards yet — add one below.</div>';
+  S.rewards.forEach(r=>{
+    const can = S.points>=r.cost;
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`<div class="grow"><div class="t">${escapeHtml(r.name)}</div>
+        <div class="small muted">${can?'Ready to claim!':(r.cost-S.points)+' 💎 to go'}</div></div>
+      <div class="cost">${r.cost}💎</div>
+      <button class="btn sm ${can?'':'secondary'}" ${can?'':'disabled'} onclick="redeem('${r.id}')">Claim</button>
+      <button class="x" title="edit" onclick='openRewardModal(${JSON.stringify(r)})'>✎</button>
+      <button class="x" title="delete" onclick="delReward('${r.id}')">🗑</button>`;
+    rl.appendChild(el);
+  });
+  const dl=document.getElementById('redeem-list');
+  if(!S.redemptions.length) dl.innerHTML='Nothing yet — go earn it.';
+  else dl.innerHTML = S.redemptions.slice(0,20).map(x=>`• ${escapeHtml(x.name)} <span class="muted">— ${x.cost}💎 · ${x.date}</span>`).join('<br>');
+
+  // progress
+  const pl=document.getElementById('progress-list'); pl.innerHTML='';
+  if(!S.progress.length){ pl.innerHTML='<div class="card small muted">No check-ins yet. Your week-1 photo is your "before" — take it today.</div>'; }
+  S.progress.forEach(p=>{
+    const el=document.createElement('div'); el.className='card progress-card';
+    el.innerHTML=`<div class="row between"><b>${p.date}</b><button class="x" onclick="delProgress('${p.id}')">🗑</button></div>
+      ${p.wall?`<div class="small"><span class="muted">Wall test:</span> ${escapeHtml(p.wall)}</div>`:''}
+      ${p.note?`<div class="small"><span class="muted">Note:</span> ${escapeHtml(p.note)}</div>`:''}
+      ${p.photo?`<img src="${p.photo}" alt="check-in ${p.date}"/>`:''}`;
+    pl.appendChild(el);
+  });
+
+  // more
+  document.getElementById('anchor-input').value = S.settings.anchor||'';
+  document.getElementById('remind-time').value = S.settings.reminderTime||'';
+}
+
+/* =========================================================
+   HELPERS / FX
+========================================================= */
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  window.scrollTo(0,0);
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function flash(elId,msg){ const e=document.getElementById(elId); e.textContent=msg; }
+let actx;
+function beep(freq,ms){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.frequency.value=freq; o.type='sine'; o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(0.0001,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.18,actx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+ms/1000);
+    o.start(); o.stop(actx.currentTime+ms/1000);
+  }catch(e){}
+}
+function burst(n){
+  const c=document.getElementById('confetti');
+  const colors=['#2dd4bf','#3b82f6','#fbbf24','#f472b6','#34d399'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';
+    c.appendChild(p);
+    setTimeout(()=>p.remove(),3200);
+  }
+}
+
+/* in-app reminder check (only while open) */
+setInterval(()=>{
+  const rt=S.settings.reminderTime;
+  if(!rt || S.lastCompletedDate===todayStr()) return;
+  const now=new Date(), hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  if(hm===rt && Notification && Notification.permission==='granted' && !window.__remindedToday){
+    window.__remindedToday=true;
+    new Notification('Posture Quest 🔥', {body:'Time for your routine — keep the streak alive.'});
+  }
+},30000);
+
+/* =========================================================
+   BOOT
+========================================================= */
+save(); render();
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
