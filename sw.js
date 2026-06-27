@@ -1,5 +1,5 @@
 // Posture Quest service worker — offline-first caching.
-const CACHE = 'posture-quest-v4';
+const CACHE = 'posture-quest-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,8 @@ self.addEventListener('activate', (e) => {
 // Cache-first; fall back to network and cache the result.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // Only handle our own files; let cross-origin (Firebase, Google Fonts) hit the network directly.
+  if (new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
     caches.match(e.request).then((cached) =>
       cached ||

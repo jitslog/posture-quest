@@ -11,6 +11,17 @@
 <link rel="apple-touch-icon" href="./icons/icon.svg" />
 <link rel="icon" href="./icons/icon.svg" />
 <title>Posture Quest</title>
+<!-- ====== Firebase config: paste your project's values here (see README) ====== -->
+<script>
+  window.FIREBASE_CONFIG = {
+    apiKey: "PASTE_API_KEY",
+    authDomain: "PASTE_AUTH_DOMAIN",
+    projectId: "PASTE_PROJECT_ID",
+    appId: "PASTE_APP_ID"
+  };
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --bg:#0f172a; --bg2:#1e293b; --card:#1e293b; --card2:#27364b;
@@ -208,6 +219,8 @@ nav button.active{color:var(--accent)}
 
 .disclaimer{border:1px solid var(--hair); color:var(--muted); border-radius:10px}
 a{color:var(--accent)}
+.bavatar{width:38px; height:38px; border-radius:8px; background:var(--card); border:1px solid var(--hair);
+  display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--accent); flex:0 0 auto}
 
 @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important} }
 </style>
@@ -251,6 +264,14 @@ a{color:var(--accent)}
         <button class="btn secondary" onclick="startSession('min')">Quick ~5 min</button>
       </div>
       <div class="small muted center" style="margin-top:10px" id="today-done-note"></div>
+    </div>
+
+    <div class="card" id="buddy-card">
+      <div class="row between">
+        <h2 style="margin:0">You &amp; your buddy</h2>
+        <span class="tag">accountability</span>
+      </div>
+      <div id="buddy-body" style="margin-top:10px"></div>
     </div>
 
     <div class="card">
@@ -308,6 +329,24 @@ a{color:var(--accent)}
   <!-- ================= MORE ================= -->
   <div id="view-more" class="view">
     <h1>Setup & Habits</h1>
+
+    <div class="card">
+      <h2>Do it with a buddy</h2>
+      <p class="small muted">Pair with your sister to see each other's streaks, who's done today, and which session (Full/Quick). Your <b>photos &amp; notes stay private</b> — never shared.</p>
+      <label>Your display name</label>
+      <input id="buddy-name" placeholder="e.g. Josh" />
+      <label>Buddy code — you both enter the <b>same</b> one</label>
+      <div class="row" style="gap:8px">
+        <input id="buddy-code" style="flex:1; min-width:0" placeholder="e.g. walcha-crew" />
+        <button class="btn ghost sm" style="white-space:nowrap" onclick="buddyGenCode()">Generate</button>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn" onclick="buddyConnect()">Connect</button>
+        <button class="btn ghost" onclick="buddyLeave()">Disconnect</button>
+      </div>
+      <div class="small muted" id="buddy-status" style="margin-top:8px"></div>
+      <div class="small muted" id="buddy-setup-state" style="margin-top:4px"></div>
+    </div>
 
     <div class="card">
       <h2>Make it stick (ADHD-friendly)</h2>
@@ -421,7 +460,8 @@ const DEFAULT = {
   ],
   redemptions:[],
   progress:[],
-  settings:{anchor:'', reminderTime:''}
+  settings:{anchor:'', reminderTime:''},
+  buddy:{name:'', code:'', memberId:''}
 };
 
 let S = load();
@@ -446,7 +486,7 @@ function refillFreeze(){
 }
 function streakStatus(){
   const t = todayStr(), last = S.lastCompletedDate;
-  if(last === t) return {cls:'status-done', txt:'✅ Done today. Your streak is safe — see you tomorrow.'};
+  if(last === t) return {cls:'status-done', txt:'Done today. Your streak is safe — see you tomorrow.'};
   if(!last) return {cls:'status-warn', txt:'No streak yet — do today\'s session to start one.'};
   const gap = dayDiff(t, last);
   if(gap === 1) return {cls:'status-alive', txt:'Streak alive — do today\'s session to keep it going.'};
@@ -610,7 +650,7 @@ function awardSession(mode){
   S.points += total;
   S.totalSessions++;
   S.history[t] = {mode, points:(S.history[t]?.points||0)+total};
-  save(); render();
+  save(); render(); buddyPush();
 
   showAward({already, base, milestone, froze, mystery, total, streak:S.streak});
 }
@@ -808,6 +848,9 @@ function render(){
   // more
   document.getElementById('anchor-input').value = S.settings.anchor||'';
   document.getElementById('remind-time').value = S.settings.reminderTime||'';
+
+  // buddy
+  buddyRender();
 }
 
 /* =========================================================
@@ -859,9 +902,112 @@ setInterval(()=>{
 },30000);
 
 /* =========================================================
+   BUDDY (Firebase sync) — shares streak/today/session only.
+   Photos, notes, points & rewards never leave this device.
+========================================================= */
+let _db=null, _unsub=null, _members=[];
+const FLAME_SM='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5973c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+const CHECK_SM='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 6 9 17l-5-5"/></svg>';
+
+function fbReady(){
+  try{
+    const c=window.FIREBASE_CONFIG;
+    if(!c || !c.apiKey || /PASTE/.test(c.apiKey) || !window.firebase) return false;
+    if(!firebase.apps.length) firebase.initializeApp(c);
+    _db = _db || firebase.firestore();
+    return true;
+  }catch(e){ return false; }
+}
+function buddyId(){
+  if(!S.buddy) S.buddy={name:'',code:'',memberId:''};
+  if(!S.buddy.memberId){ S.buddy.memberId='m_'+Math.random().toString(36).slice(2,10); save(); }
+  return S.buddy.memberId;
+}
+function buddyConnected(){ return !!(S.buddy && S.buddy.code && S.buddy.name); }
+function buddyGenCode(){
+  document.getElementById('buddy-code').value =
+    Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);
+}
+function buddyConnect(){
+  const name=document.getElementById('buddy-name').value.trim();
+  const code=document.getElementById('buddy-code').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+  if(!name){ flash('buddy-status','Enter your name first.'); return; }
+  if(!code){ flash('buddy-status','Enter or generate a buddy code.'); return; }
+  if(!fbReady()){ flash('buddy-status','Buddy sync isn’t set up yet (needs the Firebase keys). It’ll work once those are added.'); }
+  S.buddy.name=name; S.buddy.code=code; save();
+  buddyStart();
+  flash('buddy-status','Connected to "'+code+'". Share this exact code with your sister.');
+  render();
+}
+function buddyLeave(){
+  if(_unsub){ try{_unsub();}catch(e){} _unsub=null; }
+  if(S.buddy) S.buddy={name:'', code:'', memberId:S.buddy.memberId};
+  _members=[]; save(); render();
+  flash('buddy-status','Disconnected.');
+}
+function buddyPush(){
+  if(!buddyConnected() || !fbReady()) return;
+  const t=todayStr();
+  const done=S.lastCompletedDate===t;
+  const payload={
+    name:S.buddy.name, streak:S.streak||0, longest:S.longestStreak||0,
+    lastDone:S.lastCompletedDate||'',
+    todayMode: done ? (S.history[t]?.mode||'') : '',
+    updatedAt: Date.now()
+  };
+  _db.collection('groups').doc(S.buddy.code).collection('members').doc(buddyId())
+     .set(payload).catch(()=>{});
+}
+function buddyStart(){
+  if(!buddyConnected() || !fbReady()) return;
+  buddyId(); buddyPush();
+  if(_unsub){ try{_unsub();}catch(e){} }
+  _unsub=_db.collection('groups').doc(S.buddy.code).collection('members')
+    .onSnapshot(snap=>{
+      _members=[]; snap.forEach(d=> _members.push(Object.assign({id:d.id}, d.data())));
+      buddyRender();
+    }, ()=>{});
+}
+function buddyRender(){
+  // setup-tab fields
+  const ni=document.getElementById('buddy-name'); if(ni && document.activeElement!==ni) ni.value=S.buddy?.name||'';
+  const ci=document.getElementById('buddy-code'); if(ci && document.activeElement!==ci && S.buddy?.code) ci.value=S.buddy.code;
+  const ss=document.getElementById('buddy-setup-state');
+  if(ss) ss.textContent = buddyConnected() ? ('Connected · code: '+S.buddy.code) : 'Not connected';
+
+  const body=document.getElementById('buddy-body'); if(!body) return;
+  if(!buddyConnected()){
+    body.innerHTML='<p class="small muted">Team up with your sister for daily accountability — see each other’s streaks and who’s done today.</p>'+
+      '<button class="btn ghost" onclick="go(\'more\')">Set up a buddy</button>';
+    return;
+  }
+  const t=todayStr(), me=buddyId();
+  let list=_members.slice();
+  if(!list.some(m=>m.id===me)){
+    list.push({id:me, name:S.buddy.name, streak:S.streak, longest:S.longestStreak,
+      lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):'')});
+  }
+  list.sort((a,b)=>(b.streak||0)-(a.streak||0));
+  body.innerHTML = list.map(m=>{
+    const done=m.lastDone===t, mine=m.id===me;
+    const sess = done ? (m.todayMode==='full'?'Full · 12 min':'Quick · 5 min') : 'Not done yet today';
+    return `<div class="item">
+      <div class="bavatar">${escapeHtml((m.name||'?').slice(0,1).toUpperCase())}</div>
+      <div class="grow"><div class="t">${escapeHtml(m.name||'Member')}${mine?' <span class="small muted">(you)</span>':''}</div>
+        <div class="small" style="${done?'color:var(--good)':'color:var(--muted)'}">${done?CHECK_SM+' ':''}${sess}</div></div>
+      <div style="text-align:right"><div class="cost" style="color:#f5973c">${m.streak||0} ${FLAME_SM}</div>
+        <div class="small muted">best ${m.longest||0}</div></div>
+    </div>`;
+  }).join('');
+  if(list.length<2){
+    body.innerHTML += '<p class="small muted" style="margin-top:4px">Waiting for your sister to join with code <b>'+escapeHtml(S.buddy.code)+'</b>…</p>';
+  }
+}
+
+/* =========================================================
    BOOT
 ========================================================= */
-save(); render();
+save(); render(); buddyStart();
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
