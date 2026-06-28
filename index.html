@@ -927,6 +927,9 @@ function fbReady(){
   }catch(e){ return false; }
 }
 function buddyId(){
+  // Once signed in, key the buddy profile to the account so it never duplicates
+  // across devices/reinstalls.
+  if(_user && _user.uid) return 'u_'+_user.uid;
   if(!S.buddy) S.buddy={name:'',code:'',memberId:''};
   if(!S.buddy.memberId){ S.buddy.memberId='m_'+Math.random().toString(36).slice(2,10); save(); }
   return S.buddy.memberId;
@@ -968,6 +971,11 @@ function buddyPush(){
 }
 function buddyStart(){
   if(!buddyConnected() || !fbReady()) return;
+  // If we signed in after first connecting, remove the old anonymous-device doc
+  // so there's only the account-keyed one (no duplicate).
+  if(_user && _user.uid && S.buddy.memberId && ('u_'+_user.uid)!==S.buddy.memberId){
+    _db.collection('groups').doc(S.buddy.code).collection('members').doc(S.buddy.memberId).delete().catch(()=>{});
+  }
   buddyId(); buddyPush();
   if(_unsub){ try{_unsub();}catch(e){} }
   _unsub=_db.collection('groups').doc(S.buddy.code).collection('members')
