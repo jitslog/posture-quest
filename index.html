@@ -22,6 +22,7 @@
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
   :root{
     --bg:#0f172a; --bg2:#1e293b; --card:#1e293b; --card2:#27364b;
@@ -348,6 +349,12 @@ a{color:var(--accent)}
       <div class="small muted" id="buddy-setup-state" style="margin-top:4px"></div>
     </div>
 
+    <div class="card" id="account-card">
+      <h2>Account &amp; cloud sync</h2>
+      <div id="account-body"></div>
+      <div class="small muted" id="account-status" style="margin-top:8px"></div>
+    </div>
+
     <div class="card">
       <h2>Make it stick (ADHD-friendly)</h2>
       <p class="small muted">Willpower fails; <b>anchors</b> don't. Glue this to something you already do every day.</p>
@@ -474,7 +481,7 @@ function load(){
     return Object.assign(structuredClone(DEFAULT), JSON.parse(raw));
   }catch(e){ return structuredClone(DEFAULT); }
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ alert('Could not save — storage may be full.'); } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ alert('Could not save — storage may be full.'); } if(typeof scheduleSync==='function') scheduleSync(); }
 
 /* =========================================================
    STREAK / FREEZE
@@ -1006,9 +1013,98 @@ function buddyRender(){
 }
 
 /* =========================================================
+   ACCOUNT (Firebase email magic-link) + full cloud sync.
+   Syncs everything EXCEPT progress photos (those stay on the
+   device they were taken on — privacy + size).
+========================================================= */
+let _auth=null, _user=null, _syncTimer=null, _syncing=false;
+
+function authReady(){
+  if(!fbReady()) return false;
+  if(!_auth){ try{ _auth=firebase.auth(); }catch(e){ return false; } }
+  return !!_auth;
+}
+// local -> cloud payload (strip photos)
+function cloudStateFromLocal(){
+  const c = JSON.parse(JSON.stringify(S));
+  if(Array.isArray(c.progress)) c.progress = c.progress.map(p=>({id:p.id, date:p.date, wall:p.wall||'', note:p.note||''}));
+  c.updatedAt = Date.now();
+  return c;
+}
+// cloud -> local, keeping any local photos by matching id
+function applyCloudState(cloud){
+  const localPhotos={};
+  (S.progress||[]).forEach(p=>{ if(p.photo) localPhotos[p.id]=p.photo; });
+  const keepMember = S.buddy && S.buddy.memberId;
+  const merged = Object.assign(structuredClone(DEFAULT), cloud);
+  if(Array.isArray(merged.progress)) merged.progress = merged.progress.map(p=>({ ...p, photo: localPhotos[p.id]||null }));
+  merged.buddy = merged.buddy || {name:'',code:'',memberId:''};
+  if(keepMember && !merged.buddy.memberId) merged.buddy.memberId = keepMember;
+  _syncing=true; S=merged; save(); _syncing=false;
+}
+function scheduleSync(){
+  if(!_user || _syncing || !authReady()) return;
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>{
+    _db.collection('users').doc(_user.uid).set(cloudStateFromLocal()).catch(()=>{});
+  }, 1200);
+}
+async function onSignedIn(user){
+  _user=user;
+  try{
+    const ref=_db.collection('users').doc(user.uid);
+    const snap=await ref.get();
+    if(snap.exists) applyCloudState(snap.data());
+    else await ref.set(cloudStateFromLocal());
+  }catch(e){}
+  render(); buddyStart(); accountRender();
+}
+function accountInit(){
+  if(!authReady()){ accountRender(); return; }
+  _auth.onAuthStateChanged(u=>{ if(u) onSignedIn(u); else { _user=null; accountRender(); } });
+  try{
+    if(_auth.isSignInWithEmailLink(location.href)){
+      let email=localStorage.getItem('pq_email');
+      if(!email) email=window.prompt('Confirm your email to finish signing in:');
+      if(email){
+        _auth.signInWithEmailLink(email, location.href).then(()=>{
+          localStorage.removeItem('pq_email');
+          history.replaceState({}, document.title, location.pathname);
+          flash('account-status','Signed in — your progress is now synced.');
+        }).catch(e=>{ flash('account-status','Sign-in link problem: '+(e.message||e)); });
+      }
+    }
+  }catch(e){}
+}
+function sendLoginLink(){
+  const email=(document.getElementById('acct-email').value||'').trim();
+  if(!email){ flash('account-status','Enter your email first.'); return; }
+  if(!authReady()){ flash('account-status','Sign-in isn’t enabled in Firebase yet — see README setup.'); return; }
+  const settings={ url: location.origin+location.pathname, handleCodeInApp:true };
+  _auth.sendSignInLinkToEmail(email, settings).then(()=>{
+    localStorage.setItem('pq_email', email);
+    flash('account-status','Link sent! Check your email (and spam) and tap it to finish. Use the same email on any device.');
+  }).catch(e=>{ flash('account-status','Could not send link: '+(e.message||e)); });
+}
+function signOutAccount(){ if(authReady()) _auth.signOut(); flash('account-status','Signed out. Your data stays on this device.'); }
+function accountRender(){
+  const body=document.getElementById('account-body'); if(!body) return;
+  if(_user){
+    body.innerHTML=`<p class="small">Signed in as <b>${escapeHtml(_user.email||'')}</b> — progress syncs automatically.</p>
+      <p class="small muted">Sign in with this same email on any device to load everything. (Photos stay on the device they were taken on.)</p>
+      <button class="btn ghost" onclick="signOutAccount()">Sign out</button>`;
+  } else {
+    body.innerHTML=`<p class="small muted">Sign in with your email so your streak, points, rewards &amp; history follow you to any device. We email a one-tap link — no password.</p>
+      <label>Email</label>
+      <input id="acct-email" type="email" inputmode="email" placeholder="you@gmail.com" />
+      <button class="btn" style="margin-top:10px" onclick="sendLoginLink()">Email me a sign-in link</button>`;
+  }
+}
+
+/* =========================================================
    BOOT
 ========================================================= */
-save(); render(); buddyStart();
+save(); render(); buddyStart(); accountInit();
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
