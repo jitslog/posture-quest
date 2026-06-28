@@ -689,8 +689,9 @@ function closeModal(){ document.getElementById('modal').classList.remove('active
 
 /* reward modal */
 let editingReward = null;
-function openRewardModal(r){
-  editingReward = r||null;
+function openRewardModal(rid){
+  const r = rid ? S.rewards.find(x=>x.id===rid) : null;
+  editingReward = r;
   openSheet(`
     <h2>${r?'Edit':'New'} reward</h2>
     <p class="small muted">Pick something you actually want. That's what makes 💎 worth chasing.</p>
@@ -825,7 +826,7 @@ function render(){
         <div class="small muted">${can?'Ready to claim!':(r.cost-S.points)+' 💎 to go'}</div></div>
       <div class="cost">${r.cost}💎</div>
       <button class="btn sm ${can?'':'secondary'}" ${can?'':'disabled'} onclick="redeem('${r.id}')">Claim</button>
-      <button class="x" title="edit" onclick='openRewardModal(${JSON.stringify(r)})'>✎</button>
+      <button class="x" title="edit" onclick="openRewardModal('${r.id}')">✎</button>
       <button class="x" title="delete" onclick="delReward('${r.id}')">🗑</button>`;
     rl.appendChild(el);
   });

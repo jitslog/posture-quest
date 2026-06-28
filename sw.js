@@ -1,5 +1,5 @@
 // Posture Quest service worker — offline-first caching.
-const CACHE = 'posture-quest-v5';
+const CACHE = 'posture-quest-v6';
 const ASSETS = [
   './',
   './index.html',
