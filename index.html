@@ -333,7 +333,7 @@ a{color:var(--accent)}
 
     <div class="card">
       <h2>Do it with a buddy</h2>
-      <p class="small muted">Pair with your sister to see each other's streaks, who's done today, and which session (Full/Quick). Your <b>photos &amp; notes stay private</b> — never shared.</p>
+      <p class="small muted">Pair with a buddy to see each other's streaks, who's done today, and which session (Full/Quick). Your <b>photos &amp; notes stay private</b> — never shared.</p>
       <label>Your display name</label>
       <input id="buddy-name" placeholder="e.g. Josh" />
       <label>Buddy code — you both enter the <b>same</b> one</label>
@@ -947,7 +947,7 @@ function buddyConnect(){
   if(!fbReady()){ flash('buddy-status','Buddy sync isn’t set up yet (needs the Firebase keys). It’ll work once those are added.'); }
   S.buddy.name=name; S.buddy.code=code; save();
   buddyStart();
-  flash('buddy-status','Connected to "'+code+'". Share this exact code with your sister.');
+  flash('buddy-status','Connected to "'+code+'". Share this exact code with your buddy.');
   render();
 }
 function buddyLeave(){
@@ -993,7 +993,7 @@ function buddyRender(){
 
   const body=document.getElementById('buddy-body'); if(!body) return;
   if(!buddyConnected()){
-    body.innerHTML='<p class="small muted">Team up with your sister for daily accountability — see each other’s streaks and who’s done today.</p>'+
+    body.innerHTML='<p class="small muted">Team up with a buddy for daily accountability — see each other’s streaks and who’s done today.</p>'+
       '<button class="btn ghost" onclick="go(\'more\')">Set up a buddy</button>';
     return;
   }
@@ -1015,9 +1015,6 @@ function buddyRender(){
         <div class="small muted">best ${m.longest||0}</div></div>
     </div>`;
   }).join('');
-  if(list.length<2){
-    body.innerHTML += '<p class="small muted" style="margin-top:4px">Waiting for your sister to join with code <b>'+escapeHtml(S.buddy.code)+'</b>…</p>';
-  }
 }
 
 /* =========================================================

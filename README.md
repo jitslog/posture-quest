@@ -53,8 +53,10 @@ config):
    you can disable Analytics.
 2. In the project: **Build → Firestore Database → Create database** → start in
    **production mode** → pick a location.
-3. **Firestore → Rules**, paste this and Publish (open access scoped to buddy
-   groups — fine for non-sensitive stats; use a non-obvious buddy code):
+3. **Firestore → Rules** — **select all existing text and replace the whole file
+   with exactly this**, then Publish. (Both `match` blocks must sit *inside*
+   `match /databases/{database}/documents { … }`; open buddy groups are fine for
+   non-sensitive stats — use a non-obvious buddy code.)
    ```
    rules_version = '2';
    service cloud.firestore {
@@ -76,7 +78,7 @@ config):
 5. Paste `apiKey`, `authDomain`, `projectId`, `appId` into the
    `window.FIREBASE_CONFIG` block near the top of `index.html`, commit, push.
 6. In the app: **Setup → Do it with a buddy** → enter your name + a shared buddy
-   code, tap **Connect**. Your sister installs the app, enters her name and the
+   code, tap **Connect**. Your buddy installs the app, enters their name and the
    **same code**, and you'll see each other on the Home screen.
 
 Until the config is filled in, the app works fully — the buddy panel just shows
