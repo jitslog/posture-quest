@@ -61,9 +61,21 @@ config):
    rules_version = '2';
    service cloud.firestore {
      match /databases/{database}/documents {
-       match /groups/{code}/members/{member} {
-         allow read, write: if true;
+
+       match /groups/{code} {
+         allow read: if true;
+         allow create: if request.auth != null && request.resource.data.owner == request.auth.uid;
+         allow update, delete: if request.auth != null && resource.data.owner == request.auth.uid;
+
+         match /members/{member} {
+           allow read: if true;
+           allow write: if request.auth != null && (
+             member == 'u_' + request.auth.uid ||
+             get(/databases/$(database)/documents/groups/$(code)).data.owner == request.auth.uid
+           );
+         }
        }
+
        match /users/{uid} {
          allow read, write: if request.auth != null && request.auth.uid == uid;
          match /{document=**} {
@@ -73,6 +85,8 @@ config):
      }
    }
    ```
+   (Groups now require sign-in: only the owner can create/delete a group, members
+   can only write their own row, and the owner can remove anyone.)
 4. **Project settings (gear) → General → Your apps → Web (`</>`)** → register an
    app → copy the `firebaseConfig` values.
 5. Paste `apiKey`, `authDomain`, `projectId`, `appId` into the

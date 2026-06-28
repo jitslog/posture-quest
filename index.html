@@ -333,20 +333,9 @@ a{color:var(--accent)}
 
     <div class="card">
       <h2>Do it with a buddy</h2>
-      <p class="small muted">Pair with a buddy to see each other's streaks, who's done today, and which session (Full/Quick). Your <b>photos &amp; notes stay private</b> — never shared.</p>
-      <label>Your display name</label>
-      <input id="buddy-name" placeholder="e.g. Josh" />
-      <label>Buddy code — you both enter the <b>same</b> one</label>
-      <div class="row" style="gap:8px">
-        <input id="buddy-code" style="flex:1; min-width:0" placeholder="e.g. walcha-crew" />
-        <button class="btn ghost sm" style="white-space:nowrap" onclick="buddyGenCode()">Generate</button>
-      </div>
-      <div class="grid2" style="margin-top:10px">
-        <button class="btn" onclick="buddyConnect()">Connect</button>
-        <button class="btn ghost" onclick="buddyLeave()">Disconnect</button>
-      </div>
+      <p class="small muted">Create a group and share its code, or join your buddy's. See each other's streaks &amp; who's done today. Your <b>photos &amp; notes stay private</b> — never shared.</p>
+      <div id="buddy-setup-body"></div>
       <div class="small muted" id="buddy-status" style="margin-top:8px"></div>
-      <div class="small muted" id="buddy-setup-state" style="margin-top:4px"></div>
     </div>
 
     <div class="card" id="account-card">
@@ -913,7 +902,7 @@ setInterval(()=>{
    BUDDY (Firebase sync) — shares streak/today/session only.
    Photos, notes, points & rewards never leave this device.
 ========================================================= */
-let _db=null, _unsub=null, _members=[];
+let _db=null, _unsub=null, _members=[], _groupOwner=null;
 const FLAME_SM='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5973c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
 const VERIF='<svg width="13" height="13" viewBox="0 0 24 24" fill="#34d399" stroke="#0d0f14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="email-synced"><circle cx="12" cy="12" r="11" stroke="none"/><path d="M17 9l-6 6-3-3"/></svg>';
 const CHECK_SM='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -935,50 +924,86 @@ function buddyId(){
   if(!S.buddy.memberId){ S.buddy.memberId='m_'+Math.random().toString(36).slice(2,10); save(); }
   return S.buddy.memberId;
 }
-function buddyConnected(){ return !!(S.buddy && S.buddy.code && S.buddy.name); }
+function signedIn(){ return !!(_user && _user.uid); }
+function myMemberId(){ return signedIn() ? 'u_'+_user.uid : null; }
+function buddyConnected(){ return !!(S.buddy && S.buddy.code); }
 function buddyGenCode(){
-  document.getElementById('buddy-code').value =
-    Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);
+  const el=document.getElementById('buddy-code');
+  if(el) el.value=Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);
 }
-function buddyConnect(){
-  const name=document.getElementById('buddy-name').value.trim();
-  const code=document.getElementById('buddy-code').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
-  if(!name){ flash('buddy-status','Enter your name first.'); return; }
-  if(!code){ flash('buddy-status','Enter or generate a buddy code.'); return; }
-  if(!fbReady()){ flash('buddy-status','Buddy sync isn’t set up yet (needs the Firebase keys). It’ll work once those are added.'); }
-  S.buddy.name=name; S.buddy.code=code; save();
-  buddyStart();
-  flash('buddy-status','Connected to "'+code+'". Share this exact code with your buddy.');
-  render();
+function _grpInputs(){ return {
+  name:(document.getElementById('buddy-name')?.value||'').trim(),
+  code:(document.getElementById('buddy-code')?.value||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'')
+}; }
+async function buddyCreate(){
+  if(!signedIn()){ flash('buddy-status','Sign in to your account first (Account & cloud sync, below).'); return; }
+  if(!fbReady()){ flash('buddy-status','Sync isn’t set up yet.'); return; }
+  const {name,code}=_grpInputs();
+  if(!name){ flash('buddy-status','Enter your display name.'); return; }
+  if(!code){ flash('buddy-status','Enter or generate a group code.'); return; }
+  try{
+    const gref=_db.collection('groups').doc(code);
+    const g=await gref.get();
+    if(g.exists && g.data().owner!==_user.uid){ flash('buddy-status','That code is taken — pick another, or Join it instead.'); return; }
+    if(!g.exists) await gref.set({owner:_user.uid, ownerName:name, createdAt:Date.now()});
+    _groupOwner=_user.uid;
+    S.buddy={name, code, role:'owner', memberId:myMemberId()}; save();
+    buddyStart(); render();
+    flash('buddy-status','Group “'+code+'” created — you own it. Share the code with your buddy.');
+  }catch(e){ flash('buddy-status','Could not create: '+((e&&e.message)||e)); }
+}
+async function buddyJoin(){
+  if(!signedIn()){ flash('buddy-status','Sign in to your account first (Account & cloud sync, below).'); return; }
+  if(!fbReady()){ flash('buddy-status','Sync isn’t set up yet.'); return; }
+  const {name,code}=_grpInputs();
+  if(!name){ flash('buddy-status','Enter your display name.'); return; }
+  if(!code){ flash('buddy-status','Enter the group code your buddy gave you.'); return; }
+  try{
+    const g=await _db.collection('groups').doc(code).get();
+    if(!g.exists){ flash('buddy-status','No group with that code yet. Ask the owner for it, or Create one.'); return; }
+    _groupOwner=g.data().owner||null;
+    S.buddy={name, code, role:(_groupOwner===_user.uid?'owner':'member'), memberId:myMemberId()}; save();
+    buddyStart(); render();
+    flash('buddy-status','Joined group “'+code+'”.');
+  }catch(e){ flash('buddy-status','Could not join: '+((e&&e.message)||e)); }
 }
 function buddyLeave(){
   if(_unsub){ try{_unsub();}catch(e){} _unsub=null; }
-  if(S.buddy) S.buddy={name:'', code:'', memberId:S.buddy.memberId};
-  _members=[]; save(); render();
-  flash('buddy-status','Disconnected.');
+  if(signedIn() && S.buddy && S.buddy.code){
+    _db.collection('groups').doc(S.buddy.code).collection('members').doc('u_'+_user.uid).delete().catch(()=>{});
+  }
+  S.buddy={name:(S.buddy&&S.buddy.name)||'', code:'', role:'', memberId:myMemberId()};
+  _members=[]; _groupOwner=null; save(); render();
+  flash('buddy-status','Left the group.');
+}
+async function buddyKick(mid){
+  if(!(S.buddy && S.buddy.role==='owner') || !fbReady()) return;
+  if(mid==='u_'+_user.uid) return;            // can't kick yourself
+  try{
+    await _db.collection('groups').doc(S.buddy.code).collection('members').doc(mid).delete();
+    flash('buddy-status','Removed a member from the group.');
+  }catch(e){ flash('buddy-status','Could not remove: '+((e&&e.message)||e)); }
 }
 function buddyPush(){
-  if(!buddyConnected() || !fbReady()) return;
-  const t=todayStr();
-  const done=S.lastCompletedDate===t;
+  if(!buddyConnected() || !fbReady() || !signedIn()) return;
+  const t=todayStr(), done=S.lastCompletedDate===t;
   const payload={
     name:S.buddy.name, streak:S.streak||0, longest:S.longestStreak||0,
     lastDone:S.lastCompletedDate||'',
     todayMode: done ? (S.history[t]?.mode||'') : '',
-    account: !!(_user && _user.uid),
-    updatedAt: Date.now()
+    account:true, updatedAt:Date.now()
   };
-  _db.collection('groups').doc(S.buddy.code).collection('members').doc(buddyId())
-     .set(payload).catch(()=>{});
+  _db.collection('groups').doc(S.buddy.code).collection('members').doc('u_'+_user.uid).set(payload).catch(()=>{});
 }
 function buddyStart(){
-  if(!buddyConnected() || !fbReady()) return;
-  // If we signed in after first connecting, remove the old anonymous-device doc
-  // so there's only the account-keyed one (no duplicate).
-  if(_user && _user.uid && S.buddy.memberId && ('u_'+_user.uid)!==S.buddy.memberId){
-    _db.collection('groups').doc(S.buddy.code).collection('members').doc(S.buddy.memberId).delete().catch(()=>{});
-  }
-  buddyId(); buddyPush();
+  if(!buddyConnected() || !fbReady() || !signedIn()) return;
+  // learn who owns the group (drives role + kick buttons)
+  _db.collection('groups').doc(S.buddy.code).get().then(g=>{
+    _groupOwner = g.exists ? (g.data().owner||null) : null;
+    if(S.buddy) S.buddy.role = (_groupOwner===_user.uid)?'owner':'member';
+    buddyRender();
+  }).catch(()=>{});
+  buddyPush();
   if(_unsub){ try{_unsub();}catch(e){} }
   _unsub=_db.collection('groups').doc(S.buddy.code).collection('members')
     .onSnapshot(snap=>{
@@ -986,36 +1011,61 @@ function buddyStart(){
       buddyRender();
     }, ()=>{});
 }
+function buddySetupRender(){
+  const el=document.getElementById('buddy-setup-body'); if(!el) return;
+  if(!signedIn()){
+    el.innerHTML='<p class="small muted">Groups are tied to your account. Make an account in <b>Account &amp; cloud sync</b> (below), then come back here.</p>';
+    return;
+  }
+  if(buddyConnected()){
+    const owner = S.buddy.role==='owner';
+    el.innerHTML=`<div class="item"><div class="grow">
+        <div class="t">Group code: ${escapeHtml(S.buddy.code)}</div>
+        <div class="small muted">${owner?'You own this group — remove members from the Home leaderboard.':'You’re a member of this group.'}</div>
+      </div></div>
+      <button class="btn ghost" onclick="buddyLeave()">Leave group</button>`;
+    return;
+  }
+  el.innerHTML=`<label>Your display name</label>
+    <input id="buddy-name" value="${escapeHtml((S.buddy&&S.buddy.name)||'')}" placeholder="e.g. Josh" />
+    <label>Group code</label>
+    <div class="row" style="gap:8px">
+      <input id="buddy-code" style="flex:1; min-width:0" placeholder="e.g. walcha-crew" />
+      <button class="btn ghost sm" style="white-space:nowrap" onclick="buddyGenCode()">Generate</button>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <button class="btn" onclick="buddyCreate()">Create group</button>
+      <button class="btn ghost" onclick="buddyJoin()">Join group</button>
+    </div>
+    <p class="small muted" style="margin-top:8px">Create = start a new group you own. Join = enter a code a buddy shared.</p>`;
+}
 function buddyRender(){
-  // setup-tab fields
-  const ni=document.getElementById('buddy-name'); if(ni && document.activeElement!==ni) ni.value=S.buddy?.name||'';
-  const ci=document.getElementById('buddy-code'); if(ci && document.activeElement!==ci && S.buddy?.code) ci.value=S.buddy.code;
-  const ss=document.getElementById('buddy-setup-state');
-  if(ss) ss.textContent = buddyConnected() ? ('Connected · code: '+S.buddy.code) : 'Not connected';
-
+  buddySetupRender();
   const body=document.getElementById('buddy-body'); if(!body) return;
-  if(!buddyConnected()){
+  if(!signedIn() || !buddyConnected()){
     body.innerHTML='<p class="small muted">Team up with a buddy for daily accountability — see each other’s streaks and who’s done today.</p>'+
       '<button class="btn ghost" onclick="go(\'more\')">Set up a buddy</button>';
     return;
   }
-  const t=todayStr(), me=buddyId();
+  const t=todayStr(), me='u_'+_user.uid, owner=(S.buddy.role==='owner');
   let list=_members.slice();
   if(!list.some(m=>m.id===me)){
     list.push({id:me, name:S.buddy.name, streak:S.streak, longest:S.longestStreak,
-      lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):''),
-      account:!!(_user&&_user.uid)});
+      lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):''), account:true});
   }
   list.sort((a,b)=>(b.streak||0)-(a.streak||0));
-  body.innerHTML = list.map(m=>{
+  body.innerHTML = list.map((m,i)=>{
     const done=m.lastDone===t, mine=m.id===me;
     const sess = done ? (m.todayMode==='full'?'Full · 12 min':'Quick · 5 min') : 'Not done yet today';
+    const kick = (owner && !mine) ? `<button class="x" title="Remove from group" onclick="buddyKick('${m.id}')">✕</button>` : '';
     return `<div class="item">
+      <div class="small muted" style="width:16px; text-align:center; font-weight:700">${i+1}</div>
       <div class="bavatar">${escapeHtml((m.name||'?').slice(0,1).toUpperCase())}</div>
       <div class="grow"><div class="t">${escapeHtml(m.name||'Member')}${m.account?' '+VERIF:''}${mine?' <span class="small muted">(you)</span>':''}</div>
         <div class="small" style="${done?'color:var(--good)':'color:var(--muted)'}">${done?CHECK_SM+' ':''}${sess}</div></div>
       <div style="text-align:right"><div class="cost" style="color:#f5973c">${m.streak||0} ${FLAME_SM}</div>
         <div class="small muted">best ${m.longest||0}</div></div>
+      ${kick}
     </div>`;
   }).join('');
 }
