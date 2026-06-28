@@ -1106,50 +1106,63 @@ async function onSignedIn(user){
 function accountInit(){
   if(!authReady()){ accountRender(); return; }
   _auth.onAuthStateChanged(u=>{ if(u) onSignedIn(u); else { _user=null; accountRender(); } });
-  try{
-    if(_auth.isSignInWithEmailLink(location.href)){
-      let email=localStorage.getItem('pq_email');
-      if(!email) email=window.prompt('Confirm your email to finish signing in:');
-      if(email){
-        _auth.signInWithEmailLink(email, location.href).then(()=>{
-          localStorage.removeItem('pq_email');
-          history.replaceState({}, document.title, location.pathname);
-          flash('account-status','Signed in — your progress is now synced.');
-        }).catch(e=>{ flash('account-status','Sign-in link problem: '+(e.message||e)); });
-      }
-    }
-  }catch(e){}
 }
-function sendLoginLink(){
-  const email=(document.getElementById('acct-email').value||'').trim();
-  const btn=document.getElementById('acct-send-btn');
-  if(!email){ flash('account-status','Enter your email first.'); return; }
-  if(!authReady()){ flash('account-status','Sign-in isn’t enabled in Firebase yet — see README setup.'); return; }
-  if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
-  const settings={ url: location.origin+location.pathname, handleCodeInApp:true };
-  _auth.sendSignInLinkToEmail(email, settings).then(()=>{
-    localStorage.setItem('pq_email', email);
-    flash('account-status','✅ Link sent to '+email+'. IMPORTANT: open that email ON THIS DEVICE and tap the link to finish signing in here. (Check spam too.)');
-    if(btn){
-      let s=60;
-      btn.textContent='Link sent ✓';
-      const t=setInterval(()=>{ s--; if(s<=0){ clearInterval(t); btn.disabled=false; btn.textContent='Resend sign-in link'; } else { btn.textContent='Resend in '+s+'s'; } },1000);
-    }
-  }).catch(e=>{ flash('account-status','Could not send link: '+(e.message||e)); if(btn){ btn.disabled=false; btn.textContent='Email me a sign-in link'; } });
+function _acctVals(){ return { email:(document.getElementById('acct-email').value||'').trim(), pw:(document.getElementById('acct-pw').value||'') }; }
+function authErr(e, what){
+  const c=(e&&e.code)||'';
+  if(c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found') return 'Wrong email or password. New here? Tap “Create account”.';
+  if(c==='auth/invalid-email') return 'That email doesn’t look right.';
+  if(c==='auth/too-many-requests') return 'Too many attempts — wait a minute and try again.';
+  return 'Could not '+what+': '+((e&&e.message)||e);
+}
+function authSignIn(){
+  if(!authReady()){ flash('account-status','Sign-in isn’t set up in Firebase yet.'); return; }
+  const {email,pw}=_acctVals();
+  if(!email||!pw){ flash('account-status','Enter your email and password.'); return; }
+  flash('account-status','Signing in…');
+  _auth.signInWithEmailAndPassword(email,pw)
+    .then(()=>flash('account-status','Signed in ✓ — syncing your progress.'))
+    .catch(e=>flash('account-status', authErr(e,'sign in')));
+}
+function authSignUp(){
+  if(!authReady()){ flash('account-status','Sign-in isn’t set up in Firebase yet.'); return; }
+  const {email,pw}=_acctVals();
+  if(!email){ flash('account-status','Enter your email.'); return; }
+  if(pw.length<6){ flash('account-status','Pick a password of at least 6 characters.'); return; }
+  flash('account-status','Creating your account…');
+  _auth.createUserWithEmailAndPassword(email,pw)
+    .then(()=>flash('account-status','Account created ✓ — progress now synced to '+email+'.'))
+    .catch(e=>{
+      if(e && e.code==='auth/email-already-in-use') flash('account-status','That email already has an account — use “Sign in”, or “Forgot password” to set one.');
+      else flash('account-status', authErr(e,'create account'));
+    });
+}
+function authReset(){
+  if(!authReady()) return;
+  const {email}=_acctVals();
+  if(!email){ flash('account-status','Type your email first, then tap Forgot password.'); return; }
+  _auth.sendPasswordResetEmail(email)
+    .then(()=>flash('account-status','Reset email sent to '+email+'. Set a new password (opens in browser), then come back and Sign in.'))
+    .catch(e=>flash('account-status', authErr(e,'send reset')));
 }
 function signOutAccount(){ if(authReady()) _auth.signOut(); flash('account-status','Signed out. Your data stays on this device.'); }
 function accountRender(){
   const body=document.getElementById('account-body'); if(!body) return;
   if(_user){
     body.innerHTML=`<p class="small">Signed in as <b>${escapeHtml(_user.email||'')}</b> — progress syncs automatically.</p>
-      <p class="small muted">Sign in with this same email on any device to load everything. (Photos stay on the device they were taken on.)</p>
+      <p class="small muted">Use the same email + password on any device (including the home-screen app) to load everything. Photos stay on the device they were taken on.</p>
       <button class="btn ghost" onclick="signOutAccount()">Sign out</button>`;
   } else {
-    body.innerHTML=`<p class="small muted">Sign in with your email so your streak, points, rewards &amp; history follow you to any device. We email a one-tap link — no password.</p>
+    body.innerHTML=`<p class="small muted">Make an account so your streak, history &amp; settings sync to every device — <b>including the home-screen app</b>. Works fully inside the app, no email link.</p>
       <label>Email</label>
-      <input id="acct-email" type="email" inputmode="email" placeholder="you@gmail.com" />
-      <button class="btn" id="acct-send-btn" style="margin-top:10px" onclick="sendLoginLink()">Email me a sign-in link</button>
-      <p class="small muted" style="margin-top:8px">Tap the link in the email <b>on this device</b> — that's the one it signs in. Repeat on your other devices with the same email.</p>`;
+      <input id="acct-email" type="email" inputmode="email" autocomplete="username" placeholder="you@gmail.com" />
+      <label>Password</label>
+      <input id="acct-pw" type="password" autocomplete="current-password" placeholder="at least 6 characters" />
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn" onclick="authSignIn()">Sign in</button>
+        <button class="btn ghost" onclick="authSignUp()">Create account</button>
+      </div>
+      <button class="btn ghost sm" style="margin-top:8px" onclick="authReset()">Forgot password</button>`;
   }
 }
 

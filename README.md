@@ -84,21 +84,26 @@ config):
 Until the config is filled in, the app works fully — the buddy panel just shows
 a "set up a buddy" prompt.
 
-## Account sync across your own devices (email magic link)
-Sign in with your email so your streak, points, rewards and history follow you
-to any device. **Photos stay on the device they were taken on** (privacy + size).
+## Account sync across your own devices (email + password)
+Make an account so your streak, history and settings follow you to any device —
+**including the installed home-screen app**. It signs in entirely inside the app
+(no email link), which is what makes it work in an iOS PWA. **Photos stay on the
+device they were taken on** (privacy + size).
 
-Two one-time toggles in the Firebase console (same project):
+One-time in the Firebase console (same project):
 
-1. **Authentication → Get started → Sign-in method → Email/Password → enable it,
-   and turn ON "Email link (passwordless sign-in)"** → Save.
-2. **Authentication → Settings → Authorized domains → Add domain →
-   `jitslog.github.io`** (localhost is already allowed).
-3. Make sure the Firestore rules above include the `users/{uid}` block, and Publish.
+1. **Authentication → Get started → Sign-in method → Email/Password → enable it**
+   (the main toggle; the "Email link" sub-toggle isn't needed) → Save.
+2. Make sure the Firestore rules include the `users/{uid}` block, and Publish.
 
-Then in the app: **Setup → Account & cloud sync** → enter your email → tap
-**Email me a sign-in link** → open the email → tap the link → you're signed in and
-syncing. Do the same on any other device with the same email to load everything.
+Then in the app: **Setup → Account & cloud sync** → enter email + a password →
+**Create account** (first time) or **Sign in**. Use the same email + password on
+every device — phone app, computer — and everything syncs. "Forgot password"
+sends a reset email if needed.
+
+> Note: magic email links can't sign in an installed iOS home-screen app (the
+> link always opens Safari, a separate sandbox), which is why this uses a
+> password instead.
 
 ## Replace the icon (optional)
 `icons/icon.svg` is the app icon. Swap it for your own SVG, or add PNG sizes and
