@@ -915,6 +915,7 @@ setInterval(()=>{
 ========================================================= */
 let _db=null, _unsub=null, _members=[];
 const FLAME_SM='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5973c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+const VERIF='<svg width="13" height="13" viewBox="0 0 24 24" fill="#34d399" stroke="#0d0f14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="email-synced"><circle cx="12" cy="12" r="11" stroke="none"/><path d="M17 9l-6 6-3-3"/></svg>';
 const CHECK_SM='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 6 9 17l-5-5"/></svg>';
 
 function fbReady(){
@@ -964,6 +965,7 @@ function buddyPush(){
     name:S.buddy.name, streak:S.streak||0, longest:S.longestStreak||0,
     lastDone:S.lastCompletedDate||'',
     todayMode: done ? (S.history[t]?.mode||'') : '',
+    account: !!(_user && _user.uid),
     updatedAt: Date.now()
   };
   _db.collection('groups').doc(S.buddy.code).collection('members').doc(buddyId())
@@ -1001,7 +1003,8 @@ function buddyRender(){
   let list=_members.slice();
   if(!list.some(m=>m.id===me)){
     list.push({id:me, name:S.buddy.name, streak:S.streak, longest:S.longestStreak,
-      lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):'')});
+      lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):''),
+      account:!!(_user&&_user.uid)});
   }
   list.sort((a,b)=>(b.streak||0)-(a.streak||0));
   body.innerHTML = list.map(m=>{
@@ -1009,7 +1012,7 @@ function buddyRender(){
     const sess = done ? (m.todayMode==='full'?'Full · 12 min':'Quick · 5 min') : 'Not done yet today';
     return `<div class="item">
       <div class="bavatar">${escapeHtml((m.name||'?').slice(0,1).toUpperCase())}</div>
-      <div class="grow"><div class="t">${escapeHtml(m.name||'Member')}${mine?' <span class="small muted">(you)</span>':''}</div>
+      <div class="grow"><div class="t">${escapeHtml(m.name||'Member')}${m.account?' '+VERIF:''}${mine?' <span class="small muted">(you)</span>':''}</div>
         <div class="small" style="${done?'color:var(--good)':'color:var(--muted)'}">${done?CHECK_SM+' ':''}${sess}</div></div>
       <div style="text-align:right"><div class="cost" style="color:#f5973c">${m.streak||0} ${FLAME_SM}</div>
         <div class="small muted">best ${m.longest||0}</div></div>
@@ -1054,13 +1057,49 @@ function scheduleSync(){
     _db.collection('users').doc(_user.uid).set(cloudStateFromLocal()).catch(()=>{});
   }, 1200);
 }
+// Merge two states so signing in NEVER wipes progress, regardless of order.
+function unionBy(a,b,keyFn){
+  const m=new Map();
+  (b||[]).forEach(x=>{ const k=x&&keyFn(x); if(k!=null && k!=='') m.set(k,x); });
+  (a||[]).forEach(x=>{ const k=x&&keyFn(x); if(k!=null && k!=='') m.set(k,x); }); // a (local) wins on conflict
+  return [...m.values()];
+}
+function mergeStates(local, cloud){
+  local=local||{}; cloud=cloud||{};
+  const out=structuredClone(DEFAULT);
+  const lD=local.lastCompletedDate||'', cD=cloud.lastCompletedDate||'';
+  const primary = cD>lD ? cloud : local;            // most recent activity drives the live streak
+  out.lastCompletedDate = primary.lastCompletedDate||null;
+  out.streak = primary.streak||0;
+  out.freezes = (primary.freezes!=null)?primary.freezes:1;
+  out.lastFreezeRefill = primary.lastFreezeRefill||null;
+  out.longestStreak = Math.max(local.longestStreak||0, cloud.longestStreak||0);
+  out.points = Math.max(local.points||0, cloud.points||0);
+  out.totalSessions = Math.max(local.totalSessions||0, cloud.totalSessions||0);
+  const hist={}, ch=cloud.history||{}, lh=local.history||{};
+  Object.keys(ch).forEach(d=>hist[d]=ch[d]);
+  Object.keys(lh).forEach(d=>{ if(!hist[d] || (lh[d].points||0)>=(hist[d].points||0)) hist[d]=lh[d]; });
+  out.history=hist;
+  out.rewards = unionBy(local.rewards, cloud.rewards, r=>(r.name||'').toLowerCase().trim());
+  if(!out.rewards.length) out.rewards = structuredClone(DEFAULT.rewards);
+  out.redemptions = unionBy(local.redemptions, cloud.redemptions, x=>x.id);
+  out.progress = unionBy(local.progress, cloud.progress, x=>x.id); // local entries keep their photos
+  out.settings = primary.settings || local.settings || cloud.settings || structuredClone(DEFAULT.settings);
+  out.buddy = (local.buddy && local.buddy.memberId) ? local.buddy : (cloud.buddy||structuredClone(DEFAULT.buddy));
+  return out;
+}
 async function onSignedIn(user){
   _user=user;
   try{
     const ref=_db.collection('users').doc(user.uid);
     const snap=await ref.get();
-    if(snap.exists) applyCloudState(snap.data());
-    else await ref.set(cloudStateFromLocal());
+    if(snap.exists){
+      const localPhotos={}; (S.progress||[]).forEach(p=>{ if(p.photo) localPhotos[p.id]=p.photo; });
+      const merged=mergeStates(S, snap.data());
+      if(Array.isArray(merged.progress)) merged.progress=merged.progress.map(p=>({...p, photo:p.photo||localPhotos[p.id]||null}));
+      _syncing=true; S=merged; save(); _syncing=false;
+    }
+    await ref.set(cloudStateFromLocal());   // write the merged result back up
   }catch(e){}
   render(); buddyStart(); accountRender();
 }
@@ -1083,13 +1122,20 @@ function accountInit(){
 }
 function sendLoginLink(){
   const email=(document.getElementById('acct-email').value||'').trim();
+  const btn=document.getElementById('acct-send-btn');
   if(!email){ flash('account-status','Enter your email first.'); return; }
   if(!authReady()){ flash('account-status','Sign-in isn’t enabled in Firebase yet — see README setup.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
   const settings={ url: location.origin+location.pathname, handleCodeInApp:true };
   _auth.sendSignInLinkToEmail(email, settings).then(()=>{
     localStorage.setItem('pq_email', email);
-    flash('account-status','Link sent! Check your email (and spam) and tap it to finish. Use the same email on any device.');
-  }).catch(e=>{ flash('account-status','Could not send link: '+(e.message||e)); });
+    flash('account-status','✅ Link sent to '+email+'. IMPORTANT: open that email ON THIS DEVICE and tap the link to finish signing in here. (Check spam too.)');
+    if(btn){
+      let s=60;
+      btn.textContent='Link sent ✓';
+      const t=setInterval(()=>{ s--; if(s<=0){ clearInterval(t); btn.disabled=false; btn.textContent='Resend sign-in link'; } else { btn.textContent='Resend in '+s+'s'; } },1000);
+    }
+  }).catch(e=>{ flash('account-status','Could not send link: '+(e.message||e)); if(btn){ btn.disabled=false; btn.textContent='Email me a sign-in link'; } });
 }
 function signOutAccount(){ if(authReady()) _auth.signOut(); flash('account-status','Signed out. Your data stays on this device.'); }
 function accountRender(){
@@ -1102,7 +1148,8 @@ function accountRender(){
     body.innerHTML=`<p class="small muted">Sign in with your email so your streak, points, rewards &amp; history follow you to any device. We email a one-tap link — no password.</p>
       <label>Email</label>
       <input id="acct-email" type="email" inputmode="email" placeholder="you@gmail.com" />
-      <button class="btn" style="margin-top:10px" onclick="sendLoginLink()">Email me a sign-in link</button>`;
+      <button class="btn" id="acct-send-btn" style="margin-top:10px" onclick="sendLoginLink()">Email me a sign-in link</button>
+      <p class="small muted" style="margin-top:8px">Tap the link in the email <b>on this device</b> — that's the one it signs in. Repeat on your other devices with the same email.</p>`;
   }
 }
 

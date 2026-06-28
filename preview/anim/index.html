@@ -20,6 +20,7 @@
   .stage{display:flex; justify-content:center; margin-top:6px}
   svg{width:100%; max-width:300px; height:auto}
   .fig{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
+  .arm{fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; opacity:.85}
   .joint{fill:var(--accent); stroke:none}
   .ground{stroke:var(--line); stroke-width:3; stroke-linecap:round}
   .reps{display:inline-block; margin-top:8px; font-size:12px; color:var(--muted);
@@ -28,96 +29,100 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Animation style — sample</h1>
-  <p class="sub">Two exercises animated. If you like this look, I'll animate the whole routine.</p>
+  <h1>Animation style — sample v2</h1>
+  <p class="sub">Clearer movement + correct form. If this works, I'll animate the whole routine like this.</p>
 
   <!-- ================= GLUTE BRIDGE ================= -->
   <div class="card">
     <div class="ex-name">Glute bridge</div>
-    <div class="ex-cue">Drive through heels, squeeze glutes, lift hips to a straight line.</div>
+    <div class="ex-cue">Arms flat at your sides on the floor. Drive through heels, squeeze glutes, lift hips to a straight line.</div>
     <div class="stage">
       <svg viewBox="0 0 240 150" role="img" aria-label="Glute bridge animation">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <!-- head + shoulder stay grounded -->
-        <circle class="joint" cx="52" cy="113" r="11"/>
+        <!-- head stays on floor -->
+        <circle class="joint" cx="50" cy="113" r="11"/>
+        <!-- ARM flat on floor at side (stays down the whole time) -->
+        <line class="arm" x1="64" y1="120" x2="104" y2="123"/>
         <!-- planted foot + shin (fixed) -->
         <line class="fig" x1="150" y1="124" x2="128" y2="124"/>
-        <line class="fig" x1="150" y1="124" x2="150" y2="88"/>
+        <line class="fig" x1="150" y1="124" x2="150" y2="86"/>
         <!-- torso: shoulder(66,117) -> hip -->
         <line class="fig" x1="66" y1="117" x2="112" y2="117">
-          <animate attributeName="y2" values="117;84;117" dur="2.4s" repeatCount="indefinite"
+          <animate attributeName="y2" values="117;82;117" dur="2.6s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1; 0.45 0 0.2 1"/>
         </line>
-        <!-- thigh: hip -> knee(150,88) -->
-        <line class="fig" x1="112" y1="117" x2="150" y2="88">
-          <animate attributeName="y1" values="117;84;117" dur="2.4s" repeatCount="indefinite"
+        <!-- thigh: hip -> knee(150,86) -->
+        <line class="fig" x1="112" y1="117" x2="150" y2="86">
+          <animate attributeName="y1" values="117;82;117" dur="2.6s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1; 0.45 0 0.2 1"/>
         </line>
         <!-- hip joint -->
         <circle class="joint" cx="112" cy="117" r="6">
-          <animate attributeName="cy" values="117;84;117" dur="2.4s" repeatCount="indefinite"
+          <animate attributeName="cy" values="117;82;117" dur="2.6s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1; 0.45 0 0.2 1"/>
         </circle>
       </svg>
     </div>
-    <span class="reps">12 reps</span>
+    <span class="reps">12 reps · hands stay flat on the floor</span>
   </div>
 
   <!-- ================= HIP-FLEXOR STRETCH ================= -->
   <div class="card">
     <div class="ex-name">Hip-flexor stretch (kneeling)</div>
-    <div class="ex-cue">Tuck tailbone, squeeze glute, ease hips forward — feel it in the front hip.</div>
+    <div class="ex-cue">Front knee stays over your ankle (don't push it past your toes). Tuck your tailbone and glide your hips forward — feel the stretch in the FRONT of the back hip.</div>
     <div class="stage">
       <svg viewBox="0 0 240 150" role="img" aria-label="Kneeling hip flexor stretch animation">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <!-- back lower leg on ground: back knee(96,124) -> back foot(74,124) -->
-        <line class="fig" x1="96" y1="124" x2="74" y2="124"/>
-        <!-- front shin: foot(162,124) -> front knee(162,88) fixed -->
-        <line class="fig" x1="162" y1="124" x2="162" y2="88"/>
+        <!-- back lower leg on ground: back knee(92,124) -> back foot(66,124) -->
+        <line class="fig" x1="92" y1="124" x2="66" y2="124"/>
+        <!-- front shin: foot(168,124) -> front knee(168,90) — STAYS VERTICAL & FIXED (knee over ankle) -->
+        <line class="fig" x1="168" y1="124" x2="168" y2="90"/>
 
-        <!-- back thigh: back knee(96,124) -> hip -->
-        <line class="fig" x1="96" y1="124" x2="118" y2="86">
-          <animate attributeName="x2" values="118;130;118" dur="2.6s" repeatCount="indefinite"
+        <!-- back thigh: back knee(92,124) -> hip (hip glides forward) -->
+        <line class="fig" x1="92" y1="124" x2="116" y2="88">
+          <animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-          <animate attributeName="y2" values="86;94;86" dur="2.6s" repeatCount="indefinite"
-            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-        </line>
-        <!-- front thigh: front knee(162,88) -> hip -->
-        <line class="fig" x1="162" y1="88" x2="118" y2="86">
-          <animate attributeName="x2" values="118;130;118" dur="2.6s" repeatCount="indefinite"
-            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-          <animate attributeName="y2" values="86;94;86" dur="2.6s" repeatCount="indefinite"
+          <animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
         </line>
-        <!-- torso: hip -> shoulder -->
-        <line class="fig" x1="118" y1="86" x2="116" y2="48">
-          <animate attributeName="x1" values="118;130;118" dur="2.6s" repeatCount="indefinite"
+        <!-- front thigh: front knee(168,90) -> hip -->
+        <line class="fig" x1="168" y1="90" x2="116" y2="88">
+          <animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-          <animate attributeName="y1" values="86;94;86" dur="2.6s" repeatCount="indefinite"
-            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-          <animate attributeName="x2" values="116;128;116" dur="2.6s" repeatCount="indefinite"
+          <animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
         </line>
-        <!-- arm: shoulder -> hand (on front thigh) -->
-        <line class="fig" x1="116" y1="56" x2="150" y2="74" stroke-width="4">
-          <animate attributeName="x1" values="116;128;116" dur="2.6s" repeatCount="indefinite"
+        <!-- torso: hip -> shoulder (stays tall, travels forward with hips) -->
+        <line class="fig" x1="116" y1="88" x2="114" y2="46">
+          <animate attributeName="x1" values="116;142;116" dur="3s" repeatCount="indefinite"
+            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
+          <animate attributeName="y1" values="88;100;88" dur="3s" repeatCount="indefinite"
+            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
+          <animate attributeName="x2" values="114;138;114" dur="3s" repeatCount="indefinite"
+            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
+        </line>
+        <!-- arm: shoulder -> hand resting on front thigh -->
+        <line class="arm" x1="114" y1="54" x2="150" y2="78">
+          <animate attributeName="x1" values="114;138;114" dur="3s" repeatCount="indefinite"
+            keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
+          <animate attributeName="x2" values="150;168;150" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
         </line>
         <!-- head -->
-        <circle class="joint" cx="115" cy="38" r="11">
-          <animate attributeName="cx" values="115;127;115" dur="2.6s" repeatCount="indefinite"
+        <circle class="joint" cx="113" cy="36" r="11">
+          <animate attributeName="cx" values="113;137;113" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
         </circle>
         <!-- hip joint -->
-        <circle class="joint" cx="118" cy="86" r="6">
-          <animate attributeName="cx" values="118;130;118" dur="2.6s" repeatCount="indefinite"
+        <circle class="joint" cx="116" cy="88" r="6">
+          <animate attributeName="cx" values="116;142;116" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
-          <animate attributeName="cy" values="86;94;86" dur="2.6s" repeatCount="indefinite"
+          <animate attributeName="cy" values="88;100;88" dur="3s" repeatCount="indefinite"
             keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1; 0.42 0 0.2 1"/>
         </circle>
       </svg>
     </div>
-    <span class="reps">30 seconds each side</span>
+    <span class="reps">30 seconds each side · knee stays put, hips glide forward</span>
   </div>
 </div>
 </body>
