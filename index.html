@@ -1075,7 +1075,22 @@ function buddyRender(){
       lastDone:S.lastCompletedDate||'', todayMode:(S.lastCompletedDate===t?(S.history[t]?.mode||''):''), account:true});
   }
   list.sort((a,b)=>(b.streak||0)-(a.streak||0));
-  body.innerHTML = list.map((m,i)=>{
+  // daily done-board summary + nudge
+  let head='';
+  if(list.length>=2){
+    const total=list.length, doneCount=list.filter(m=>m.lastDone===t).length;
+    const meDone=(S.lastCompletedDate===t);
+    const others=list.filter(m=>m.id!==me);
+    const othersDone=others.filter(m=>m.lastDone===t);
+    let nudge='';
+    if(doneCount===total) nudge='Everyone trained today — nice work.';
+    else if(!meDone && othersDone.length) nudge=escapeHtml(othersDone[0].name)+' already trained today — your turn.';
+    else if(meDone) { const behind=others.find(m=>m.lastDone!==t); nudge='You’re done — '+escapeHtml(behind?behind.name:'your buddy')+' hasn’t gone yet.'; }
+    else nudge='Nobody’s trained yet today — go first.';
+    const cls = (doneCount===total)?'status-alive':(meDone?'status-done':'status-warn');
+    head=`<div class="status-banner ${cls}" style="margin:0 0 10px">${doneCount}/${total} done today — ${nudge}</div>`;
+  }
+  body.innerHTML = head + list.map((m,i)=>{
     const done=m.lastDone===t, mine=m.id===me;
     const sess = done ? (m.todayMode==='full'?'Full · 12 min':'Quick · 5 min') : 'Not done yet today';
     const kick = (owner && !mine) ? `<button class="x" title="Remove from group" onclick="buddyKick('${m.id}')">✕</button>` : '';
