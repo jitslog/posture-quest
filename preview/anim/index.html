@@ -20,8 +20,8 @@
   .ex-cue{color:var(--muted); font-size:12px; margin-top:2px; min-height:30px}
   .stage{display:flex; justify-content:center; margin-top:4px}
   svg{width:100%; max-width:240px; height:auto}
-  .fig{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
-  .arm{fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; opacity:.9}
+  .fig{fill:none; stroke:var(--accent); stroke-width:9; stroke-linecap:round; stroke-linejoin:round}
+  .arm{fill:none; stroke:var(--accent); stroke-width:7; stroke-linecap:round; stroke-linejoin:round; opacity:.92}
   .joint{fill:var(--accent); stroke:none}
   .ground{stroke:var(--line); stroke-width:3; stroke-linecap:round}
   .wall{stroke:#5b6675; stroke-width:3; stroke-linecap:round; stroke-dasharray:2 9}
@@ -38,9 +38,9 @@
       <div class="ex-cue">Arms flat at sides. Drive heels, squeeze glutes, lift hips to a line.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <circle class="joint" cx="50" cy="113" r="11"/>
+        <circle class="joint" cx="50" cy="113" r="14"/>
         <line class="arm" x1="64" y1="120" x2="104" y2="123"/>
-        <line class="fig" x1="150" y1="124" x2="128" y2="124"/>
+        <line class="fig" x1="150" y1="124" x2="168" y2="124"/>
         <line class="fig" x1="150" y1="124" x2="150" y2="86"/>
         <line class="fig" x1="66" y1="117" x2="112" y2="117"><animate attributeName="y2" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line>
         <line class="fig" x1="112" y1="117" x2="150" y2="86"><animate attributeName="y1" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line>
@@ -59,7 +59,7 @@
         <line class="fig" x1="168" y1="90" x2="116" y2="88"><animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
         <line class="fig" x1="116" y1="88" x2="114" y2="46"><animate attributeName="x1" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y1" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
         <line class="arm" x1="114" y1="54" x2="150" y2="78"><animate attributeName="x1" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="150;168;150" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
-        <circle class="joint" cx="113" cy="36" r="11"><animate attributeName="cx" values="113;137;113" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle>
+        <circle class="joint" cx="113" cy="36" r="14"><animate attributeName="cx" values="113;137;113" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle>
         <circle class="joint" cx="116" cy="88" r="6"><animate attributeName="cx" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="cy" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle>
       </svg></div>
     </div>
@@ -69,7 +69,7 @@
       <div class="ex-cue">Back flat on floor. Lower opposite arm + leg, then return. Keep the low back pinned.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <circle class="joint" cx="44" cy="115" r="11"/>
+        <circle class="joint" cx="44" cy="115" r="14"/>
         <line class="fig" x1="60" y1="120" x2="116" y2="120"/>
         <!-- arm: shoulder up, lowers back overhead -->
         <line class="arm" x1="62" y1="120" x2="62" y2="84"><animate attributeName="x2" values="62;42;62" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="84;104;84" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
@@ -90,13 +90,13 @@
       <div class="ex-cue">Forearms down. Tuck tailbone, squeeze glutes + abs. Flat line, head to heels.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2.5;0 0" dur="3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
-          <circle class="joint" cx="78" cy="92" r="11"/>
-          <line class="fig" x1="120" y1="124" x2="92" y2="124"/>   <!-- forearm on floor -->
-          <line class="fig" x1="92" y1="124" x2="92" y2="98"/>     <!-- upper arm -->
-          <line class="fig" x1="92" y1="98" x2="152" y2="110"/>    <!-- shoulder->hip -->
-          <line class="fig" x1="152" y1="110" x2="190" y2="122"/>  <!-- hip->ankle -->
-          <line class="fig" x1="190" y1="122" x2="200" y2="124"/>  <!-- foot -->
+        <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 0" dur="3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+          <line class="fig" x1="68" y1="124" x2="100" y2="124"/>   <!-- forearm flat, pointing forward -->
+          <line class="fig" x1="100" y1="124" x2="100" y2="100"/>  <!-- upper arm: elbow under shoulder -->
+          <line class="fig" x1="100" y1="100" x2="158" y2="112"/>  <!-- shoulder -> hip -->
+          <line class="fig" x1="158" y1="112" x2="198" y2="123"/>  <!-- hip -> ankle -->
+          <line class="fig" x1="198" y1="123" x2="206" y2="124"/>  <!-- foot -->
+          <circle class="joint" cx="84" cy="98" r="14"/>           <!-- head over hands -->
         </g>
       </svg></div>
     </div>
@@ -111,7 +111,7 @@
           <line class="fig" x1="156" y1="98" x2="150" y2="124"/>  <!-- hips up, sitting back on heels -->
           <line class="fig" x1="156" y1="98" x2="100" y2="116"/>  <!-- back sloping down -->
           <line class="arm" x1="100" y1="116" x2="58" y2="124"/>  <!-- arms long on floor -->
-          <circle class="joint" cx="92" cy="118" r="10"/>          <!-- head down near floor -->
+          <circle class="joint" cx="92" cy="118" r="14"/>          <!-- head down near floor -->
         </g>
       </svg></div>
     </div>
@@ -121,9 +121,9 @@
       <div class="ex-cue">On your back, knees bent. Flatten the low back into the floor, hold, release.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <circle class="joint" cx="46" cy="115" r="11"/>
+        <circle class="joint" cx="46" cy="115" r="14"/>
         <line class="fig" x1="150" y1="124" x2="150" y2="92"/>    <!-- shin -->
-        <line class="fig" x1="150" y1="124" x2="132" y2="124"/>   <!-- foot -->
+        <line class="fig" x1="150" y1="124" x2="166" y2="124"/>   <!-- foot (toes forward) -->
         <!-- low-back arch that flattens: torso line from shoulder to hip with mid lifting/pressing -->
         <line class="fig" x1="62" y1="118" x2="112" y2="116"><animate attributeName="y2" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line>
         <line class="fig" x1="112" y1="116" x2="150" y2="92"><animate attributeName="y1" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line>
@@ -137,7 +137,7 @@
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
         <line class="wall" x1="70" y1="18" x2="70" y2="124"/>     <!-- wall -->
-        <circle class="joint" cx="84" cy="34" r="11"/>            <!-- head on wall -->
+        <circle class="joint" cx="84" cy="34" r="14"/>            <!-- head on wall -->
         <line class="fig" x1="84" y1="45" x2="84" y2="74"/>       <!-- upper back on wall -->
         <!-- lumbar -> hip: gap that tucks toward wall -->
         <line class="fig" x1="84" y1="74" x2="92" y2="92"><animate attributeName="x2" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line>

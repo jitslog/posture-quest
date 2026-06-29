@@ -226,8 +226,8 @@ a{color:var(--accent)}
 .ov-anim svg{width:100%; height:auto; display:block}
 .ov-anim .ag{stroke:#222733; stroke-width:3; stroke-linecap:round}
 .ov-anim .aw{stroke:#5b6675; stroke-width:3; stroke-linecap:round; stroke-dasharray:2 9}
-.ov-anim .af{fill:none; stroke:#34d399; stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
-.ov-anim .aa{fill:none; stroke:#34d399; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; opacity:.9}
+.ov-anim .af{fill:none; stroke:#34d399; stroke-width:9; stroke-linecap:round; stroke-linejoin:round}
+.ov-anim .aa{fill:none; stroke:#34d399; stroke-width:7; stroke-linecap:round; stroke-linejoin:round; opacity:.92}
 .ov-anim .aj{fill:#34d399}
 .ring{width:190px; height:190px}
 .ring svg{width:190px; height:190px}
@@ -276,45 +276,33 @@ a{color:var(--accent)}
       <div class="small muted center" style="margin-top:10px" id="today-done-note"></div>
     </div>
 
-    <div class="card" id="buddy-card">
-      <div class="row between">
-        <h2 style="margin:0">You &amp; your buddy</h2>
-        <span class="tag">accountability</span>
-      </div>
-      <div id="buddy-body" style="margin-top:10px"></div>
-    </div>
-
     <div class="card">
       <div class="row between">
-        <h2 style="margin:0">The fix, in plain terms</h2>
-        <span class="tag">why this works</span>
+        <h2 style="margin:0">Why this works</h2>
+        <span class="tag">the fix</span>
       </div>
       <p class="small muted" style="margin-top:8px">
-        Your tilt comes from <b>tight hip flexors + lower back</b> pulling your pelvis forward, while
-        <b>weak glutes + core</b> fail to pull it back. The tailbone-tuck you already do is the right
-        position — these reps build the strength to hold it <i>without thinking</i>. Daily wins. Stay consistent
-        ~3 months and it becomes your default.
+        Tight hip flexors + lower back tip your pelvis forward; weak glutes + core let it stay there.
+        These reps build the strength to hold the tuck automatically. Stick with it ~3 months.
       </p>
       <div class="disclaimer" style="margin-top:8px">
-        Not medical advice. If you have pain or a diagnosed back/hip condition, check with a physio first.
+        Not medical advice — see a physio if you have pain or a diagnosed condition.
       </div>
     </div>
   </div>
 
-  <!-- ================= STORE ================= -->
-  <div id="view-store" class="view">
-    <h1>Reward Store</h1>
-    <p class="muted small">Earn 💎 by doing your routine. Spend them on <b>real</b> rewards <i>you</i> chose.
-      That's the whole point — these mean something because you picked them.</p>
+  <!-- ================= BUDDY ================= -->
+  <div id="view-buddy" class="view">
+    <h1>Buddy</h1>
+    <p class="muted small">See each other's streaks and who's trained today. Photos &amp; notes stay private.</p>
     <div class="card">
-      <div class="row between"><h2 style="margin:0">Your rewards</h2>
-        <div class="pill"><span>💎</span><span id="points-store">0</span></div></div>
-      <div id="reward-list" style="margin-top:12px"></div>
-      <button class="btn ghost" onclick="openRewardModal()">+ Add a reward</button>
+      <div class="row between"><h2 style="margin:0">Leaderboard</h2><span class="tag">today</span></div>
+      <div id="buddy-body" style="margin-top:10px"></div>
     </div>
     <div class="card">
-      <h2>Redeemed</h2>
-      <div id="redeem-list" class="small muted">Nothing yet — go earn it.</div>
+      <h2>Your group</h2>
+      <div id="buddy-setup-body"></div>
+      <div class="small muted" id="buddy-status" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -340,13 +328,6 @@ a{color:var(--accent)}
   <div id="view-more" class="view">
     <h1>Setup & Habits</h1>
 
-    <div class="card">
-      <h2>Do it with a buddy</h2>
-      <p class="small muted">Create a group and share its code, or join your buddy's. See each other's streaks &amp; who's done today. Your <b>photos &amp; notes stay private</b> — never shared.</p>
-      <div id="buddy-setup-body"></div>
-      <div class="small muted" id="buddy-status" style="margin-top:8px"></div>
-    </div>
-
     <div class="card" id="account-card">
       <h2>Account &amp; cloud sync</h2>
       <div id="account-body"></div>
@@ -354,10 +335,10 @@ a{color:var(--accent)}
     </div>
 
     <div class="card">
-      <h2>Make it stick (ADHD-friendly)</h2>
-      <p class="small muted">Willpower fails; <b>anchors</b> don't. Glue this to something you already do every day.</p>
-      <label>I'll do my routine right after…</label>
-      <input id="anchor-input" placeholder="e.g. my morning shower / brushing teeth" />
+      <h2>Make it stick</h2>
+      <p class="small muted">Glue the routine to something you already do daily — that beats willpower.</p>
+      <label>I'll do it right after…</label>
+      <input id="anchor-input" placeholder="e.g. my morning shower" />
       <button class="btn ghost" style="margin-top:10px" onclick="saveAnchor()">Save anchor</button>
     </div>
 
@@ -375,8 +356,8 @@ a{color:var(--accent)}
     </div>
 
     <div class="card">
-      <h2>Move progress between devices</h2>
-      <p class="small muted">No account, no cloud. Export here, import on your other device.</p>
+      <h2>Backup / restore</h2>
+      <p class="small muted">Export a backup file, or import one. (Signing in syncs automatically — this is just a manual backup.)</p>
       <div class="grid2">
         <button class="btn ghost" onclick="exportData()">Export</button>
         <button class="btn ghost" onclick="document.getElementById('import-file').click()">Import</button>
@@ -386,13 +367,8 @@ a{color:var(--accent)}
     </div>
 
     <div class="card">
-      <h2>How scoring works</h2>
-      <ul class="small muted" style="margin:6px 0 0; padding-left:18px">
-        <li>Full session = <b>+12 💎</b>, Quick = <b>+6 💎</b> (once/day for streak).</li>
-        <li>Every session ends with a <b>mystery bonus</b> — usually small, rarely a jackpot.</li>
-        <li>Hit a 7-day multiple → <b>+10 💎</b> milestone bonus.</li>
-        <li>Miss one day? Your <b>❄️ freeze</b> saves the streak (refills weekly). Miss two and it resets — no shame, just start again.</li>
-      </ul>
+      <h2>How the streak works</h2>
+      <p class="small muted" style="margin:6px 0 0">Do a session each day to keep your streak. Miss one day and your <b>freeze</b> saves it automatically (refills weekly); miss two and it resets — no big deal, just start again.</p>
     </div>
 
     <div class="card">
@@ -439,7 +415,7 @@ a{color:var(--accent)}
 <!-- ================= NAV ================= -->
 <nav>
   <button data-v="home" class="active" onclick="go('home')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>Home</button>
-  <button data-v="store" onclick="go('store')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></svg></span>Store</button>
+  <button data-v="buddy" onclick="go('buddy')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Buddy</button>
   <button data-v="progress" onclick="go('progress')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></span>Progress</button>
   <button data-v="more" onclick="go('more')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></span>Setup</button>
 </nav>
@@ -525,13 +501,13 @@ const MIN = [
 ];
 function step(name,type,val,cue,anim){ return {name,type,val,cue,anim}; }
 const ANIM = {
-  bridge:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="50" cy="113" r="11"/><line class="aa" x1="64" y1="120" x2="104" y2="123"/><line class="af" x1="150" y1="124" x2="128" y2="124"/><line class="af" x1="150" y1="124" x2="150" y2="86"/><line class="af" x1="66" y1="117" x2="112" y2="117"><animate attributeName="y2" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><line class="af" x1="112" y1="117" x2="150" y2="86"><animate attributeName="y1" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><circle class="aj" cx="112" cy="117" r="6"><animate attributeName="cy" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></circle></svg>`,
-  hipflexor:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="92" y1="124" x2="66" y2="124"/><line class="af" x1="168" y1="124" x2="168" y2="90"/><line class="af" x1="92" y1="124" x2="116" y2="88"><animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="168" y1="90" x2="116" y2="88"><animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="116" y1="88" x2="114" y2="46"><animate attributeName="x1" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y1" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="114" y1="54" x2="150" y2="78"><animate attributeName="x1" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="150;168;150" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><circle class="aj" cx="113" cy="36" r="11"><animate attributeName="cx" values="113;137;113" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle><circle class="aj" cx="116" cy="88" r="6"><animate attributeName="cx" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="cy" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle></svg>`,
-  deadbug:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="44" cy="115" r="11"/><line class="af" x1="60" y1="120" x2="116" y2="120"/><line class="aa" x1="62" y1="120" x2="62" y2="84"><animate attributeName="x2" values="62;42;62" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="84;104;84" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="64" y1="120" x2="64" y2="82" opacity="0.5"/><line class="af" x1="116" y1="120" x2="116" y2="86"><animate attributeName="x2" values="116;150;116" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="116" y1="86" x2="148" y2="86"><animate attributeName="x1" values="116;150;116" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y1" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="148;182;148" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="114" y1="120" x2="114" y2="88" opacity="0.5"/><line class="af" x1="114" y1="88" x2="146" y2="88" opacity="0.5"/></svg>`,
-  plank:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2.5;0 0" dur="3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/><circle class="aj" cx="78" cy="92" r="11"/><line class="af" x1="120" y1="124" x2="92" y2="124"/><line class="af" x1="92" y1="124" x2="92" y2="98"/><line class="af" x1="92" y1="98" x2="152" y2="110"/><line class="af" x1="152" y1="110" x2="190" y2="122"/><line class="af" x1="190" y1="122" x2="200" y2="124"/></g></svg>`,
-  childpose:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="150" y1="124" x2="184" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;-7 2;0 0" dur="3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><line class="af" x1="156" y1="98" x2="150" y2="124"/><line class="af" x1="156" y1="98" x2="100" y2="116"/><line class="aa" x1="100" y1="116" x2="58" y2="124"/><circle class="aj" cx="92" cy="118" r="10"/></g></svg>`,
-  pelvictilt:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="46" cy="115" r="11"/><line class="af" x1="150" y1="124" x2="150" y2="92"/><line class="af" x1="150" y1="124" x2="132" y2="124"/><line class="af" x1="62" y1="118" x2="112" y2="116"><animate attributeName="y2" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="112" y1="116" x2="150" y2="92"><animate attributeName="y1" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><circle class="aj" cx="112" cy="116" r="6"><animate attributeName="cy" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></circle></svg>`,
-  wallpost:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="aw" x1="70" y1="18" x2="70" y2="124"/><circle class="aj" cx="84" cy="34" r="11"/><line class="af" x1="84" y1="45" x2="84" y2="74"/><line class="af" x1="84" y1="74" x2="92" y2="92"><animate attributeName="x2" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="92" y1="92" x2="86" y2="124"><animate attributeName="x1" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="aa" x1="84" y1="56" x2="96" y2="86"/></svg>`
+  bridge:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="50" cy="112" r="14"/><line class="aa" x1="64" y1="120" x2="104" y2="123"/><line class="af" x1="150" y1="124" x2="168" y2="124"/><line class="af" x1="150" y1="124" x2="150" y2="86"/><line class="af" x1="66" y1="117" x2="112" y2="117"><animate attributeName="y2" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><line class="af" x1="112" y1="117" x2="150" y2="86"><animate attributeName="y1" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><circle class="aj" cx="112" cy="117" r="6"><animate attributeName="cy" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></circle></svg>`,
+  hipflexor:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="92" y1="124" x2="66" y2="124"/><line class="af" x1="168" y1="124" x2="168" y2="90"/><line class="af" x1="92" y1="124" x2="116" y2="88"><animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="168" y1="90" x2="116" y2="88"><animate attributeName="x2" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="116" y1="88" x2="114" y2="46"><animate attributeName="x1" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y1" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="114" y1="54" x2="150" y2="78"><animate attributeName="x1" values="114;138;114" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="150;168;150" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><circle class="aj" cx="113" cy="34" r="14"><animate attributeName="cx" values="113;137;113" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle><circle class="aj" cx="116" cy="88" r="6"><animate attributeName="cx" values="116;142;116" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="cy" values="88;100;88" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle></svg>`,
+  deadbug:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="42" cy="113" r="14"/><line class="af" x1="60" y1="120" x2="116" y2="120"/><line class="aa" x1="62" y1="120" x2="62" y2="84"><animate attributeName="x2" values="62;42;62" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="84;104;84" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="64" y1="120" x2="64" y2="82" opacity="0.5"/><line class="af" x1="116" y1="120" x2="116" y2="86"><animate attributeName="x2" values="116;150;116" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="116" y1="86" x2="148" y2="86"><animate attributeName="x1" values="116;150;116" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y1" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="x2" values="148;182;148" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="86;112;86" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="114" y1="120" x2="114" y2="88" opacity="0.5"/><line class="af" x1="114" y1="88" x2="146" y2="88" opacity="0.5"/></svg>`,
+  plank:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 0" dur="3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/><line class="af" x1="68" y1="124" x2="100" y2="124"/><line class="af" x1="100" y1="124" x2="100" y2="100"/><line class="af" x1="100" y1="100" x2="158" y2="112"/><line class="af" x1="158" y1="112" x2="198" y2="123"/><line class="af" x1="198" y1="123" x2="206" y2="124"/><circle class="aj" cx="84" cy="98" r="14"/></g></svg>`,
+  childpose:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="150" y1="124" x2="184" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;-7 2;0 0" dur="3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><line class="af" x1="156" y1="98" x2="150" y2="124"/><line class="af" x1="156" y1="98" x2="100" y2="116"/><line class="aa" x1="100" y1="116" x2="58" y2="124"/><circle class="aj" cx="90" cy="116" r="14"/></g></svg>`,
+  pelvictilt:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="44" cy="113" r="14"/><line class="af" x1="150" y1="124" x2="150" y2="92"/><line class="af" x1="150" y1="124" x2="166" y2="124"/><line class="af" x1="62" y1="118" x2="112" y2="116"><animate attributeName="y2" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="112" y1="116" x2="150" y2="92"><animate attributeName="y1" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><circle class="aj" cx="112" cy="116" r="6"><animate attributeName="cy" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></circle></svg>`,
+  wallpost:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="aw" x1="70" y1="18" x2="70" y2="124"/><circle class="aj" cx="86" cy="34" r="14"/><line class="af" x1="84" y1="45" x2="84" y2="74"/><line class="af" x1="84" y1="74" x2="92" y2="92"><animate attributeName="x2" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="92" y1="92" x2="86" y2="124"><animate attributeName="x1" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="aa" x1="84" y1="56" x2="96" y2="86"/></svg>`
 };
 
 /* =========================================================
@@ -820,7 +796,6 @@ function render(){
   document.getElementById('streak-num').textContent = S.streak;
   document.getElementById('best-num').textContent = S.longestStreak;
   document.getElementById('points-pill').textContent = S.points;
-  document.getElementById('points-store').textContent = S.points;
   const fz = document.getElementById('freeze-num'), fl = document.getElementById('freeze-lbl');
   const SNOW='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>';
   fz.style.color='#7cc4ff'; fz.innerHTML=SNOW;
@@ -832,24 +807,6 @@ function render(){
   document.getElementById('today-done-note').textContent =
     S.lastCompletedDate===todayStr() ? 'Done today — extra rounds give a small bonus.' :
     (S.settings.anchor ? ('Anchor: right after '+S.settings.anchor) : '');
-
-  // store
-  const rl = document.getElementById('reward-list'); rl.innerHTML='';
-  if(!S.rewards.length) rl.innerHTML='<div class="small muted">No rewards yet — add one below.</div>';
-  S.rewards.forEach(r=>{
-    const can = S.points>=r.cost;
-    const el=document.createElement('div'); el.className='item';
-    el.innerHTML=`<div class="grow"><div class="t">${escapeHtml(r.name)}</div>
-        <div class="small muted">${can?'Ready to claim!':(r.cost-S.points)+' 💎 to go'}</div></div>
-      <div class="cost">${r.cost}💎</div>
-      <button class="btn sm ${can?'':'secondary'}" ${can?'':'disabled'} onclick="redeem('${r.id}')">Claim</button>
-      <button class="x" title="edit" onclick="openRewardModal('${r.id}')">✎</button>
-      <button class="x" title="delete" onclick="delReward('${r.id}')">🗑</button>`;
-    rl.appendChild(el);
-  });
-  const dl=document.getElementById('redeem-list');
-  if(!S.redemptions.length) dl.innerHTML='Nothing yet — go earn it.';
-  else dl.innerHTML = S.redemptions.slice(0,20).map(x=>`• ${escapeHtml(x.name)} <span class="muted">— ${x.cost}💎 · ${x.date}</span>`).join('<br>');
 
   // progress
   const pl=document.getElementById('progress-list'); pl.innerHTML='';
