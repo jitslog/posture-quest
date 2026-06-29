@@ -153,6 +153,7 @@
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
         <line class="fig" x1="96" y1="84" x2="96" y2="124"/>
         <line class="fig" x1="150" y1="84" x2="150" y2="124"/>
+        <line class="fig" x1="150" y1="124" x2="182" y2="124"/>
         <line class="fig" x1="96" y1="84" x2="150" y2="84"/>
         <circle class="joint" cx="84" cy="78" r="13"/>
         <line class="arm" x1="96" y1="86" x2="70" y2="92"><animate attributeName="x2" values="70;52;70" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="92;76;92" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
@@ -165,10 +166,10 @@
       <div class="ex-cue">Face down, hands by temples. Lift your chest with your back, pause, lower slowly. Neck long.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
         <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <line class="fig" x1="150" y1="120" x2="190" y2="124"/>
-        <line class="fig" x1="150" y1="120" x2="98" y2="118"><animate attributeName="y2" values="118;100;118" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
-        <line class="arm" x1="104" y1="116" x2="86" y2="120"><animate attributeName="y1" values="116;98;116" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="120;104;120" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
-        <circle class="joint" cx="86" cy="114" r="13"><animate attributeName="cy" values="114;96;114" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle>
+        <line class="fig" x1="150" y1="120" x2="192" y2="124"/>
+        <line class="fig" x1="150" y1="120" x2="96" y2="118"><animate attributeName="y2" values="118;90;118" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
+        <line class="arm" x1="102" y1="116" x2="84" y2="120"><animate attributeName="y1" values="116;88;116" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="120;96;120" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line>
+        <circle class="joint" cx="84" cy="114" r="13"><animate attributeName="cy" values="114;86;114" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle>
       </svg></div>
     </div>
 
@@ -190,10 +191,13 @@
     <div class="card"><div class="ex-name">Chin tuck</div>
       <div class="ex-cue">Eyes level. Glide your head straight back (double chin), hold 2s, release.</div>
       <div class="stage"><svg viewBox="0 0 240 150">
-        <line class="ground" x1="14" y1="124" x2="226" y2="124"/>
-        <line class="fig" x1="118" y1="124" x2="118" y2="62"/>
-        <line class="fig" x1="118" y1="62" x2="132" y2="52"><animate attributeName="x2" values="132;120;132" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line>
-        <circle class="joint" cx="132" cy="40" r="14"><animate attributeName="cx" values="132;118;132" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></circle>
+        <line class="wall" x1="104" y1="20" x2="104" y2="132"/>
+        <line class="fig" x1="104" y1="132" x2="104" y2="96"/>
+        <g><animateTransform attributeName="transform" type="translate" values="26 0;0 0;26 0" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>
+          <line class="fig" x1="104" y1="96" x2="104" y2="78"/>
+          <circle class="joint" cx="104" cy="64" r="14"/>
+          <line class="arm" x1="117" y1="62" x2="129" y2="62"/>
+        </g>
       </svg></div>
     </div>
 
