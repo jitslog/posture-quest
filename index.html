@@ -229,6 +229,10 @@ a{color:var(--accent)}
 .ov-anim .af{fill:none; stroke:#34d399; stroke-width:9; stroke-linecap:round; stroke-linejoin:round}
 .ov-anim .aa{fill:none; stroke:#34d399; stroke-width:7; stroke-linecap:round; stroke-linejoin:round; opacity:.92}
 .ov-anim .aj{fill:#34d399}
+.qblk{margin-bottom:14px}
+.qq{font-weight:600; font-size:14px; margin-bottom:6px}
+.qopt{display:flex; align-items:flex-start; gap:9px; padding:9px 11px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; font-size:14px; cursor:pointer}
+.qopt input{width:auto; margin:2px 0 0; flex:0 0 auto}
 .ring{width:190px; height:190px}
 .ring svg{width:190px; height:190px}
 
@@ -264,6 +268,17 @@ a{color:var(--accent)}
         </div>
       </div>
       <div id="status-banner" class="status-banner status-warn">Loading…</div>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <h2 style="margin:0">Your plan</h2>
+        <div class="row" style="gap:6px">
+          <button class="btn ghost sm" onclick="openAssessment()">Posture check</button>
+          <button class="btn ghost sm" onclick="openPacks()">Packs</button>
+        </div>
+      </div>
+      <div class="small muted" id="focus-line" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -443,7 +458,8 @@ const DEFAULT = {
   redemptions:[],
   progress:[],
   settings:{anchor:'', reminderTime:''},
-  buddy:{name:'', code:'', memberId:''}
+  buddy:{name:'', code:'', memberId:''},
+  assessment:null   // {apt, shoulders, neck, date} once the posture check is taken
 };
 
 let S = load();
@@ -479,7 +495,7 @@ function streakStatus(){
 /* =========================================================
    ROUTINES
 ========================================================= */
-const FULL = [
+const APT_FULL = [
   step('Hip-flexor stretch — RIGHT','timer',40,'Kneel on right knee, left foot forward. TUCK your tailbone, squeeze right glute, ease hips forward. Feel the stretch in the FRONT of your right hip.','hipflexor'),
   step('Hip-flexor stretch — LEFT','timer',40,'Switch: kneel on left knee. Tuck the tailbone, squeeze left glute, ease forward. Front of the left hip.','hipflexor'),
   step('Lower-back release','timer',60,'Child\'s pose: sit hips back to heels, arms long, let the lower back round and breathe into it.','childpose'),
@@ -492,13 +508,63 @@ const FULL = [
   step('Posterior pelvic tilt holds','timer',30,'On your back, knees bent. Flatten lower back into floor (the tuck), hold ~5s, release. Repeat slowly. This is the exact motion you\'re training to make automatic.','pelvictilt'),
   step('Standing wall posture hold','timer',30,'Stand: heels, butt, upper back, head on a wall. Gently tuck tailbone so the lower-back gap shrinks. Memorize this feeling — that\'s your target posture.','wallpost')
 ];
-const MIN = [
+const APT_MIN = [
   step('Hip-flexor stretch — RIGHT','timer',30,'Kneel on right knee, tuck tailbone, squeeze glute, ease hips forward. Front of right hip.','hipflexor'),
   step('Hip-flexor stretch — LEFT','timer',30,'Switch sides. Tuck, squeeze, ease forward. Front of left hip.','hipflexor'),
   step('Glute bridge','reps',15,'On your back, drive through heels, squeeze glutes, lift hips to a straight line. Ribs down, no arching.','bridge'),
   step('Dead bug','reps',10,'Back flat on floor, knees over hips. Extend opposite arm + leg slowly, return. 10 per side. Keep the back pinned.','deadbug'),
   step('Standing wall posture hold','timer',30,'Heels/butt/back/head on wall. Tuck tailbone to shrink the lower-back gap. Lock in the feeling.','wallpost')
 ];
+// Rounded-shoulders module
+const SHOULDER_FULL = [
+  step('Doorway pec stretch','timer',40,'Forearms on a doorframe at shoulder height, step one foot through and lean gently. Feel it across the chest. Don\'t shrug.','pecstretch'),
+  step('Scap squeeze — Set 1','reps',12,'Stand tall, arms bent. Pull elbows back and DOWN, squeezing your shoulder blades together. Hold 1s each. Don\'t shrug up.','scapsqueeze'),
+  step('Scap squeeze — Set 2','reps',12,'Again, 12 reps. Think "tuck shoulder blades into your back pockets."','scapsqueeze')
+];
+const SHOULDER_MIN = [
+  step('Doorway pec stretch','timer',30,'Forearms on a doorframe, step through and lean. Stretch across the chest.','pecstretch'),
+  step('Scap squeeze','reps',12,'Pull elbows back and down, squeeze the shoulder blades together. 12 reps.','scapsqueeze')
+];
+// Forward-head module
+const NECK_FULL = [
+  step('Chin tucks — Set 1','reps',10,'Eyes level. Glide your head straight BACK (make a double chin), hold 2s, release. Don\'t tilt up or down. 10 reps.','chintuck'),
+  step('Chin tucks — Set 2','reps',10,'Again, 10 slow reps. This re-stacks your head over your shoulders.','chintuck')
+];
+const NECK_MIN = [
+  step('Chin tucks','reps',10,'Glide your head straight back (double chin), hold 2s, release. Eyes stay level. 10 reps.','chintuck')
+];
+// Lower-back strengthening pack (PT-standard core/back stability)
+const LOWERBACK_FULL = [
+  step('Glute bridge','reps',12,'On your back, drive through heels, squeeze glutes, lift hips to a straight line. Ribs down.','bridge'),
+  step('Bird-dog — Set 1','reps',10,'On all fours, flat back, brace your core. Reach opposite arm + leg out long and LEVEL, hold 2s, return. Don\'t let your hips rock. 10 per side.','birddog'),
+  step('Bird-dog — Set 2','reps',10,'Again, 10 per side. Slow — move from a solid, braced trunk.','birddog'),
+  step('Back extension','reps',12,'Face down, hands by your temples. Lift your chest a few inches using your back muscles, pause, lower slowly. Keep your neck long — don\'t crank up.','superman'),
+  step('Side plank — RIGHT','timer',25,'On your right forearm, body in one straight line, hips lifted. Don\'t let the hips sag.','sideplank'),
+  step('Side plank — LEFT','timer',25,'Switch sides. Straight line head to feet, hips up and steady.','sideplank'),
+  step('Dead bug','reps',10,'On your back, knees over hips. Press your low back flat, extend opposite arm + leg, return. 10 per side.','deadbug')
+];
+const LOWERBACK_MIN = [
+  step('Glute bridge','reps',15,'Drive through heels, squeeze glutes, lift hips to a straight line.','bridge'),
+  step('Bird-dog','reps',10,'All fours, flat back. Reach opposite arm + leg level, hold 2s. 10 per side.','birddog'),
+  step('Side plank — RIGHT','timer',20,'Right-forearm side plank, hips up, straight line.','sideplank'),
+  step('Side plank — LEFT','timer',20,'Other side. Hips up, straight line.','sideplank')
+];
+
+// Pack registry — order here is the order they appear in a combined routine
+const PACKS = {
+  apt:       {name:'Anterior pelvic tilt', desc:'Lower back arches, hips tip forward. Loosen hip flexors/back, strengthen glutes + core.', full:APT_FULL, min:APT_MIN},
+  lowerback: {name:'Lower-back strengthening', desc:'Build a strong, resilient lower back & core: bird-dog, bridges, back extensions, side planks.', full:LOWERBACK_FULL, min:LOWERBACK_MIN},
+  shoulders: {name:'Rounded shoulders', desc:'Shoulders roll forward. Open the chest, strengthen the mid-back.', full:SHOULDER_FULL, min:SHOULDER_MIN},
+  neck:      {name:'Forward head / tech neck', desc:'Head juts forward. Chin tucks to re-stack it over your shoulders.', full:NECK_FULL, min:NECK_MIN}
+};
+function selectedPacks(){ const A=S.assessment||{}; return Object.keys(PACKS).filter(k=>A[k]); }
+function buildRoutine(mode){
+  let arr=[];
+  selectedPacks().forEach(k=> arr = arr.concat(mode==='full'?PACKS[k].full:PACKS[k].min));
+  if(!arr.length) arr = mode==='full'?APT_FULL:APT_MIN;   // safe default
+  return arr;
+}
+function focusList(){ return selectedPacks().map(k=>PACKS[k].name); }
 function step(name,type,val,cue,anim){ return {name,type,val,cue,anim}; }
 const ANIM = {
   bridge:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="50" cy="112" r="14"/><line class="aa" x1="64" y1="120" x2="104" y2="123"/><line class="af" x1="150" y1="124" x2="168" y2="124"/><line class="af" x1="150" y1="124" x2="150" y2="86"/><line class="af" x1="66" y1="117" x2="112" y2="117"><animate attributeName="y2" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><line class="af" x1="112" y1="117" x2="150" y2="86"><animate attributeName="y1" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></line><circle class="aj" cx="112" cy="117" r="6"><animate attributeName="cy" values="117;82;117" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1"/></circle></svg>`,
@@ -507,7 +573,13 @@ const ANIM = {
   plank:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 0" dur="3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/><line class="af" x1="68" y1="124" x2="100" y2="124"/><line class="af" x1="100" y1="124" x2="100" y2="100"/><line class="af" x1="100" y1="100" x2="158" y2="112"/><line class="af" x1="158" y1="112" x2="198" y2="123"/><line class="af" x1="198" y1="123" x2="206" y2="124"/><circle class="aj" cx="84" cy="98" r="14"/></g></svg>`,
   childpose:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="150" y1="124" x2="184" y2="124"/><g><animateTransform attributeName="transform" type="translate" values="0 0;-7 2;0 0" dur="3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><line class="af" x1="156" y1="98" x2="150" y2="124"/><line class="af" x1="156" y1="98" x2="100" y2="116"/><line class="aa" x1="100" y1="116" x2="58" y2="124"/><circle class="aj" cx="90" cy="116" r="14"/></g></svg>`,
   pelvictilt:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><circle class="aj" cx="44" cy="113" r="14"/><line class="af" x1="150" y1="124" x2="150" y2="92"/><line class="af" x1="150" y1="124" x2="166" y2="124"/><line class="af" x1="62" y1="118" x2="112" y2="116"><animate attributeName="y2" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="112" y1="116" x2="150" y2="92"><animate attributeName="y1" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><circle class="aj" cx="112" cy="116" r="6"><animate attributeName="cy" values="112;119;112" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></circle></svg>`,
-  wallpost:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="aw" x1="70" y1="18" x2="70" y2="124"/><circle class="aj" cx="86" cy="34" r="14"/><line class="af" x1="84" y1="45" x2="84" y2="74"/><line class="af" x1="84" y1="74" x2="92" y2="92"><animate attributeName="x2" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="92" y1="92" x2="86" y2="124"><animate attributeName="x1" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="aa" x1="84" y1="56" x2="96" y2="86"/></svg>`
+  wallpost:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="aw" x1="70" y1="18" x2="70" y2="124"/><circle class="aj" cx="86" cy="34" r="14"/><line class="af" x1="84" y1="45" x2="84" y2="74"/><line class="af" x1="84" y1="74" x2="92" y2="92"><animate attributeName="x2" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="92" y1="92" x2="86" y2="124"><animate attributeName="x1" values="92;84;92" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="aa" x1="84" y1="56" x2="96" y2="86"/></svg>`,
+  chintuck:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="118" y1="124" x2="118" y2="62"/><line class="af" x1="118" y1="62" x2="132" y2="52"><animate attributeName="x2" values="132;120;132" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><circle class="aj" cx="132" cy="40" r="14"><animate attributeName="cx" values="132;118;132" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></circle></svg>`,
+  pecstretch:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="aw" x1="176" y1="16" x2="176" y2="124"/><line class="af" x1="118" y1="124" x2="124" y2="86"/><line class="af" x1="124" y1="86" x2="128" y2="52"><animate attributeName="x2" values="128;112;128" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="128" y1="58" x2="176" y2="60"><animate attributeName="x1" values="128;112;128" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><circle class="aj" cx="130" cy="42" r="14"><animate attributeName="cx" values="130;114;130" dur="3s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle></svg>`,
+  scapsqueeze:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="138" x2="226" y2="138"/><circle class="aj" cx="120" cy="34" r="14"/><line class="af" x1="120" y1="48" x2="120" y2="104"/><line class="af" x1="98" y1="62" x2="146" y2="62"/><line class="aa" x1="98" y1="62" x2="104" y2="86"><animate attributeName="x2" values="106;80;106" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="aa" x1="146" y1="62" x2="140" y2="86"><animate attributeName="x2" values="138;164;138" dur="2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="120" y1="104" x2="108" y2="138"/><line class="af" x1="120" y1="104" x2="132" y2="138"/></svg>`,
+  birddog:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="96" y1="84" x2="96" y2="124"/><line class="af" x1="150" y1="84" x2="150" y2="124"/><line class="af" x1="96" y1="84" x2="150" y2="84"/><circle class="aj" cx="84" cy="78" r="13"/><line class="aa" x1="96" y1="86" x2="70" y2="92"><animate attributeName="x2" values="70;52;70" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="92;76;92" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="af" x1="150" y1="84" x2="176" y2="92"><animate attributeName="x2" values="176;196;176" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="92;76;92" dur="2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line></svg>`,
+  superman:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="150" y1="120" x2="190" y2="124"/><line class="af" x1="150" y1="120" x2="98" y2="118"><animate attributeName="y2" values="118;100;118" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><line class="aa" x1="104" y1="116" x2="86" y2="120"><animate attributeName="y1" values="116;98;116" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/><animate attributeName="y2" values="120;104;120" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></line><circle class="aj" cx="86" cy="114" r="13"><animate attributeName="cy" values="114;96;114" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/></circle></svg>`,
+  sideplank:`<svg viewBox="0 0 240 150"><line class="ag" x1="14" y1="124" x2="226" y2="124"/><line class="af" x1="90" y1="124" x2="118" y2="124"/><line class="af" x1="90" y1="124" x2="90" y2="100"/><circle class="aj" cx="78" cy="90" r="13"/><line class="aa" x1="90" y1="100" x2="96" y2="72"/><line class="af" x1="90" y1="100" x2="143" y2="116"><animate attributeName="y2" values="120;110;120" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line><line class="af" x1="143" y1="116" x2="196" y2="124"><animate attributeName="y1" values="120;110;120" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/></line></svg>`
 };
 
 /* =========================================================
@@ -517,7 +589,7 @@ let sess = null; // {mode, steps, i, remaining, paused, timerId}
 const RING = 628;
 
 function startSession(mode){
-  sess = { mode, steps: mode==='full'?FULL:MIN, i:0, remaining:0, paused:false, timerId:null };
+  sess = { mode, steps: buildRoutine(mode), i:0, remaining:0, paused:false, timerId:null };
   document.getElementById('ov-mode').textContent = mode==='full'?'Full':'Quick';
   document.getElementById('overlay').classList.add('active');
   loadStep();
@@ -804,6 +876,8 @@ function render(){
   const st = streakStatus();
   const b = document.getElementById('status-banner');
   b.className='status-banner '+st.cls; b.textContent=st.txt;
+  const fl2=document.getElementById('focus-line');
+  if(fl2){ const f=focusList(); fl2.innerHTML = f.length ? ('Today\'s packs: <b>'+f.map(escapeHtml).join(', ')+'</b>') : 'Take the posture check or pick a pack to personalize your routine.'; }
   document.getElementById('today-done-note').textContent =
     S.lastCompletedDate===todayStr() ? 'Done today — extra rounds give a small bonus.' :
     (S.settings.anchor ? ('Anchor: right after '+S.settings.anchor) : '');
@@ -1207,6 +1281,60 @@ function accountRender(){
       </div>
       <button class="btn ghost sm" style="margin-top:8px" onclick="authReset()">Forgot password</button>`;
   }
+}
+
+/* =========================================================
+   POSTURE CHECK (self-assessment -> personalized routine)
+========================================================= */
+function openAssessment(){
+  const opt=(n,v,label)=>`<label class="qopt"><input type="radio" name="${n}" value="${v}"><span>${label}</span></label>`;
+  openSheet(`
+    <h2 style="text-align:left;margin:0">Posture check</h2>
+    <p class="small muted" style="text-align:left;margin:4px 0 12px">A few quick questions — we'll recommend exercise packs you can then confirm.</p>
+    <div style="text-align:left">
+      <div class="qblk"><div class="qq">1. Heels, butt, upper back &amp; head on a wall — the gap behind your lower back is…</div>
+        ${opt('q1','snug','A flat hand fits snugly')}${opt('q1','wide','A whole hand or more slides through')}${opt('q1','hard','Hard to touch all four points at once')}</div>
+      <div class="qblk"><div class="qq">2. Arms hanging relaxed — do your knuckles face forward / shoulders roll in?</div>
+        ${opt('q2','yes','Yes')}${opt('q2','no','No')}</div>
+      <div class="qblk"><div class="qq">3. Head sits forward of your shoulders, or neck / upper-back tension?</div>
+        ${opt('q3','yes','Yes')}${opt('q3','no','No')}</div>
+      <div class="qblk"><div class="qq">4. Lower-back pain or fatigue, or you just want to strengthen your lower back?</div>
+        ${opt('q4','yes','Yes')}${opt('q4','no','No')}</div>
+    </div>
+    <div class="small" id="assess-msg" style="text-align:left;color:var(--bad);min-height:16px"></div>
+    <button class="btn" style="margin-top:8px" onclick="assessSubmit()">See recommended packs</button>`);
+}
+function assessSubmit(){
+  const v=n=>{const el=document.querySelector('input[name='+n+']:checked'); return el?el.value:'';};
+  const q1=v('q1'), q2=v('q2'), q3=v('q3'), q4=v('q4');
+  if(!q1||!q2||!q3||!q4){ const m=document.getElementById('assess-msg'); if(m) m.textContent='Please answer all four.'; return; }
+  const rec={
+    apt:(q1!=='snug'),
+    shoulders:(q2==='yes'||q1==='hard'),
+    neck:(q3==='yes'),
+    lowerback:(q4==='yes'),
+    date:todayStr()
+  };
+  if(!rec.apt&&!rec.shoulders&&!rec.neck&&!rec.lowerback) rec.apt=true;
+  S.assessment=rec; save(); render();
+  openPacks(true);   // show picker pre-checked so they can confirm/adjust
+}
+function openPacks(fromCheck){
+  const A=S.assessment||{};
+  const row=k=>`<label class="qopt"><input type="checkbox" data-pack="${k}" ${A[k]?'checked':''}><span><b>${PACKS[k].name}</b><br><span class="small muted">${PACKS[k].desc}</span></span></label>`;
+  openSheet(`
+    <h2 style="text-align:left;margin:0">Choose your packs</h2>
+    <p class="small muted" style="text-align:left;margin:4px 0 10px">${fromCheck?'Based on your answers — adjust if you like.':'Pick what you want to train.'} Your daily routine combines the packs you turn on.${fromCheck?'':' Not sure? <a onclick="openAssessment()" style="cursor:pointer;color:var(--accent)">Take the posture check</a>.'}</p>
+    <div style="text-align:left">${Object.keys(PACKS).map(row).join('')}</div>
+    <div class="small" id="packs-msg" style="text-align:left;color:var(--bad);min-height:16px"></div>
+    <button class="btn" style="margin-top:6px" onclick="savePacks()">Save my plan</button>`);
+}
+function savePacks(){
+  const sel={date:todayStr()};
+  let any=false;
+  document.querySelectorAll('#sheet input[data-pack]').forEach(c=>{ sel[c.dataset.pack]=c.checked; if(c.checked) any=true; });
+  if(!any){ const m=document.getElementById('packs-msg'); if(m) m.textContent='Pick at least one pack.'; return; }
+  S.assessment=sel; save(); render(); closeModal();
 }
 
 /* =========================================================
